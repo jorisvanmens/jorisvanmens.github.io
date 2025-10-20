@@ -1,0 +1,466 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Hourly Electricity Pricing — PG&E EV2A</title>
+    <style>
+      :root {
+        --bg: #0b1020; /* deep indigo */
+        --panel: #121a33;
+        --muted: #94a3b8;
+        --text: #e2e8f0;
+        --accent: #60a5fa;
+        --ok: #10b981;
+        --err: #ef4444;
+        --warn: #f59e0b;
+      }
+      html, body { height: 100%; }
+      body {
+        margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+        background: radial-gradient(1200px 800px at 20% 0%, #0d173a 0%, var(--bg) 45%, #0b0f1c 100%);
+        color: var(--text);
+      }
+      .wrap { max-width: 980px; margin: 44px auto; padding: 0 16px; }
+      .card {
+        background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 18px; box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+      }
+      header { display:flex; gap:16px; align-items:center; justify-content:space-between; margin-bottom: 16px; }
+      h1 { font-size: clamp(20px, 3vw, 28px); margin: 0; letter-spacing: 0.2px; }
+      .sub { color: var(--muted); font-size: 14px; }
+      .controls { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 10px; padding: 16px; }
+      .controls > .field { grid-column: span 2; display:flex; flex-direction:column; gap:6px; }
+      .controls label { font-size: 12px; color: var(--muted); }
+      .controls input, .controls select, .controls button {
+        background: var(--panel); color: var(--text);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 12px; padding: 10px 12px; outline: none;
+      }
+      .controls .field.wide { grid-column: span 4; }
+      .controls .field.narrow { grid-column: span 1; }
+      .btn {
+        border: 1px solid rgba(255,255,255,0.1); background: var(--accent); color: #061221; font-weight: 600;
+        border-radius: 12px; padding: 10px 14px; cursor: pointer; text-align:center; box-shadow: 0 6px 20px rgba(96,165,250,0.35); transition: transform .06s ease;
+      }
+      .btn:active { transform: scale(0.98); }
+      .btn.ghost { background: transparent; color: var(--text); border-color: rgba(255,255,255,0.18); box-shadow: none; }
+      .btn.toggle { background: transparent; color: var(--text); border-color: rgba(255,255,255,0.18); box-shadow: none; }
+      .btn.toggle.active { background: var(--accent); color: #061221; box-shadow: 0 6px 20px rgba(96,165,250,0.35); }
+      .row { display:flex; gap:10px; align-items:center; flex-wrap: wrap; }
+      .status { padding: 10px 14px; border-top: 1px solid rgba(255,255,255,0.08); display:flex; gap:12px; align-items:center; }
+      .dot { width:10px; height:10px; border-radius:50%; background: var(--muted); }
+      .dot.ok { background: var(--ok); }
+      .dot.err { background: var(--err); }
+      .dot.warn { background: var(--warn); }
+      .scroll { overflow: auto; }
+      table { width: 100%; border-collapse: collapse; }
+      thead th { position: sticky; top: 0; background: #0f1833; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.08); }
+      th, td { padding: 10px 12px; text-align: left; border-bottom: 1px dashed rgba(255,255,255,0.05); }
+      tbody tr:hover { background: rgba(255,255,255,0.03); }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+      .pill { font-size: 12px; color: #061221; background: var(--accent); border-radius: 999px; padding: 2px 8px; font-weight: 700; }
+      .help { color: var(--muted); font-size: 12px; }
+      .footnote { color: var(--muted); font-size: 12px; padding: 12px 16px 18px; }
+      .chart-wrap { padding: 12px 16px 6px; }
+      #chart { width: 100%; height: 260px; display:block; }
+      @media (max-width: 800px) {
+        .controls { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .controls .field { grid-column: span 2; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <div>
+          <h1>Hourly Electricity Pricing — PG&E EV2A</h1>
+          <div class="sub">Uses GridX “getPricing” (market=DAM, program=CalFUSE) with CCA and circuit ID. Defaults to <strong>today</strong> in Pacific Time.</div>
+        </div>
+        <div class="pill" id="tz-pill"></div>
+      </header>
+
+      <div class="card">
+        <div class="controls">
+          <div class="field">
+            <label>Representative Circuit ID (9 digits, include leading zeros)</label>
+            <input id="circuit" class="mono" value="042211101" maxlength="9" />
+          </div>
+          <div class="field">
+            <label>Rate name</label>
+            <select id="ratename">
+              <option value="EV2A" selected>EV2A</option>
+              <option value="EV2AS">EV2AS</option>
+              <option value="BEV1">BEV1</option>
+              <option value="BEV2P">BEV2P</option>
+              <option value="BEV2S">BEV2S</option>
+              <option value="B10P">B10P</option>
+              <option value="B10S">B10S</option>
+              <option value="B19P">B19P</option>
+              <option value="B19S">B19S</option>
+              <option value="B20P">B20P</option>
+              <option value="B20S">B20S</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>CCA (optional)</label>
+            <select id="cca">
+              <option value="">— none —</option>
+              <option value="MCE" selected>MCE</option>
+              <option value="PCE">PCE</option>
+              <option value="AVA">AVA</option>
+              <option value="SVCE">SVCE</option>
+              <option value="VCE">VCE</option>
+              <option value="SJCE">SJCE</option>
+              <option value="3CE">3CE</option>
+              <option value="PIO">PIO</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Environment</label>
+            <select id="env">
+              <option value="prod" selected>Production</option>
+              <option value="stage">Stage (test)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Utility</label>
+            <input id="utility" value="PGE" />
+          </div>
+          <div class="field">
+            <label>Program</label>
+            <input id="program" value="CalFUSE" />
+          </div>
+          <div class="field wide">
+            <label>Day (PT)</label>
+            <div class="row">
+              <button class="btn toggle" id="btnYesterday" title="Load yesterday (PT)">Yesterday</button>
+              <button class="btn toggle active" id="btnToday" title="Load today (PT)">Today</button>
+              <button class="btn toggle" id="btnTomorrow" title="Load tomorrow (PT)">Tomorrow</button>
+              <button class="btn toggle" id="btnCustom" title="Pick any date (PT)">Custom</button>
+              <input id="customDay" type="date" class="mono" style="display:none;" />
+              <span class="help">Based on Pacific Time. Loads immediately on click.</span>
+            </div>
+          </div>
+          <div class="field narrow" style="align-self:end">
+            <button class="btn" id="loadBtn" title="Refresh current day">Reload</button>
+          </div>
+        </div>
+        <div class="status" id="status">
+          <div class="dot" id="dot"></div>
+          <div class="help" id="statusText">Waiting to load…</div>
+        </div>
+
+        <div class="chart-wrap">
+          <canvas id="chart"></canvas>
+          <div class="help" id="chartCaption">Price shown in ¢/kWh</div>
+        </div>
+
+        <div class="scroll" style="max-height: 60vh;">
+          <table>
+            <thead>
+              <tr>
+                <th>Interval start (PT)</th>
+                <th>Interval start (Your TZ)</th>
+                <th class="mono">Price ($/kWh)</th>
+                <th class="mono">Price (¢/kWh)</th>
+                <th class="mono">Status</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+        <div class="footnote">Note: Day-ahead prices are published ~4:30pm PT (forecast) and finalized ~6:30pm PT daily. If you query before prices are published, you may see empty results (HTTP 204).</div>
+      </div>
+    </div>
+
+    <script>
+      // ==== Utilities to handle Pacific Time and formatting ====
+      const PT = 'America/Los_Angeles';
+      let lastRows = [];
+      let selectedDay = null; // YYYYMMDD in PT
+
+      function formatParts(date, timeZone) {
+        const parts = new Intl.DateTimeFormat('en-US', {
+          timeZone,
+          year: 'numeric', month: '2-digit', day: '2-digit',
+          hour: '2-digit', minute: '2-digit', hour12: false
+        }).formatToParts(date);
+        const map = Object.fromEntries(parts.map(p => [p.type, p.value]));
+        return map;
+      }
+
+      function yyyymmddInTZ(date, timeZone) {
+        const parts = new Intl.DateTimeFormat('en-US', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(date);
+        const map = Object.fromEntries(parts.map(p => [p.type, p.value]));
+        return `${map.year}${map.month}${map.day}`;
+      }
+
+      function dashedFromYYYYMMDD(s) {
+        return `${s.slice(0,4)}-${s.slice(4,6)}-${s.slice(6,8)}`;
+      }
+
+      function YYYYMMDDFromDashed(s) {
+        return (s || '').replaceAll('-', '');
+      }
+
+      function ptDateWithOffset(offsetDays = 0) {
+        const ptNow = new Date(new Date().toLocaleString('en-US', { timeZone: PT }));
+        const d = new Date(ptNow);
+        d.setDate(ptNow.getDate() + offsetDays);
+        return d;
+      }
+
+      function todayInPT() {
+        return yyyymmddInTZ(ptDateWithOffset(0), PT);
+      }
+
+      function normalizeIso(ts) {
+        // Ensure ISO offset contains a colon (e.g. -08:00) so the Date parser is happy in all browsers
+        return ts.replace(/([+-][0-9]{2})([0-9]{2})$/, '$1:$2');
+      }
+
+      function setStatus(kind, msg) {
+        const dot = document.getElementById('dot');
+        const status = document.getElementById('statusText');
+        dot.className = 'dot ' + (kind || '');
+        status.textContent = msg;
+      }
+
+      function setTZPill() {
+        const me = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const pill = document.getElementById('tz-pill');
+        pill.textContent = `Your TZ: ${me}`;
+      }
+
+      // ==== Core fetch + render logic ====
+      async function fetchPricing({ utility, market, program, startdate, enddate, ratename, representativeCircuitId, cca, env }) {
+        const base = env === 'stage' ? 'https://pge-pe-api.gridx.com/stage/v1/getPricing' : 'https://pge-pe-api.gridx.com/v1/getPricing';
+        const params = new URLSearchParams({ utility, market, program, startdate, enddate, ratename, representativeCircuitId });
+        if (cca) params.set('cca', cca);
+        const url = `${base}?${params.toString()}`;
+        const res = await fetch(url);
+        if (res.status === 204) {
+          return { meta: { code: 204 }, data: [] };
+        }
+        if (!res.ok) {
+          const text = await res.text().catch(() => '');
+          throw new Error(`HTTP ${res.status}: ${text || res.statusText}`);
+        }
+        return res.json();
+      }
+
+      function extractRows(data) {
+        const rows = [];
+        for (const day of data || []) {
+          for (const d of (day.priceDetails || [])) rows.push(d);
+        }
+        rows.sort((a,b) => new Date(normalizeIso(a.startIntervalTimeStamp)) - new Date(normalizeIso(b.startIntervalTimeStamp)));
+        return rows;
+      }
+
+      function renderRows(rows) {
+        const tbody = document.getElementById('tbody');
+        tbody.innerHTML = '';
+
+        if (!rows || rows.length === 0) {
+          const tr = document.createElement('tr');
+          const td = document.createElement('td'); td.colSpan = 5; td.className = 'help'; td.textContent = 'No price data returned for the requested day.'; tr.appendChild(td); tbody.appendChild(tr);
+          return;
+        }
+
+        for (const r of rows) {
+          const d = new Date(normalizeIso(r.startIntervalTimeStamp));
+          const ptParts = formatParts(d, PT);
+          const meParts = formatParts(d, Intl.DateTimeFormat().resolvedOptions().timeZone);
+          const priceUSD = Number(r.intervalPrice);
+          const priceCents = priceUSD * 100;
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td class="mono">${ptParts.year}-${ptParts.month}-${ptParts.day} ${ptParts.hour}:${ptParts.minute} PT</td>
+            <td class="mono">${meParts.year}-${meParts.month}-${meParts.day} ${meParts.hour}:${meParts.minute}</td>
+            <td class="mono">${priceUSD.toFixed(6)}</td>
+            <td class="mono">${priceCents.toFixed(3)}</td>
+            <td class="mono">${r.priceStatus || ''}</td>
+          `;
+          tbody.appendChild(tr);
+        }
+      }
+
+      function renderChart(rows) {
+        const canvas = document.getElementById('chart');
+        const ctx = canvas.getContext('2d');
+        // Resize for HiDPI
+        const dpr = window.devicePixelRatio || 1;
+        const cssW = canvas.clientWidth;
+        const cssH = canvas.clientHeight;
+        canvas.width = Math.max(1, Math.floor(cssW * dpr));
+        canvas.height = Math.max(1, Math.floor(cssH * dpr));
+        ctx.scale(dpr, dpr);
+
+        // Clear
+        ctx.clearRect(0, 0, cssW, cssH);
+        ctx.font = '12px system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial';
+        ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text') || '#e2e8f0';
+        ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+
+        const pad = { left: 48, right: 12, top: 12, bottom: 28 };
+        const plotW = cssW - pad.left - pad.right;
+        const plotH = cssH - pad.top - pad.bottom;
+
+        // No data
+        if (!rows || rows.length === 0) {
+          ctx.fillStyle = 'rgba(226,232,240,0.8)';
+          ctx.fillText('No data to chart', pad.left + 6, pad.top + 16);
+          return;
+        }
+
+        const values = rows.map(r => Number(r.intervalPrice) * 100); // cents
+        let minV = Math.min(...values);
+        let maxV = Math.max(...values);
+        if (minV === maxV) { minV -= 1; maxV += 1; }
+
+        // Nice ticks (5)
+        const ticks = 5;
+        const step = (maxV - minV) / (ticks - 1);
+        const tickVals = Array.from({length: ticks}, (_,i) => minV + i*step);
+
+        // Axes + grid
+        ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+        ctx.fillStyle = 'rgba(148,163,184,0.9)';
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'middle';
+        for (const tv of tickVals) {
+          const y = pad.top + (maxV - tv) * (plotH / (maxV - minV));
+          ctx.beginPath();
+          ctx.moveTo(pad.left, y);
+          ctx.lineTo(cssW - pad.right, y);
+          ctx.stroke();
+          ctx.fillText(tv.toFixed(1), pad.left - 6, y);
+        }
+
+        // X tick labels (HH:00 at quartiles)
+        const n = rows.length;
+        const idxs = Array.from(new Set([0, Math.floor(n*0.25), Math.floor(n*0.5), Math.floor(n*0.75), n-1]));
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+        for (const i of idxs) {
+          const x = pad.left + (n === 1 ? plotW/2 : (i * (plotW / (n - 1))));
+          const d = new Date(normalizeIso(rows[i].startIntervalTimeStamp));
+          const pt = formatParts(d, PT);
+          ctx.fillText(`${pt.hour}:00`, x, cssH - pad.bottom + 6);
+        }
+
+        // Line path
+        ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent') || '#60a5fa';
+        ctx.lineWidth = 2;
+        ctx.lineJoin = 'round';
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        for (let i = 0; i < n; i++) {
+          const v = values[i];
+          const x = pad.left + (n === 1 ? plotW/2 : (i * (plotW / (n - 1))));
+          const y = pad.top + (maxV - v) * (plotH / (maxV - minV));
+          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+
+        // Points
+        ctx.fillStyle = 'rgba(96,165,250,0.9)';
+        for (let i = 0; i < n; i++) {
+          const v = values[i];
+          const x = pad.left + (n === 1 ? plotW/2 : (i * (plotW / (n - 1))));
+          const y = pad.top + (maxV - v) * (plotH / (maxV - minV));
+          ctx.beginPath(); ctx.arc(x, y, 2.5, 0, Math.PI*2); ctx.fill();
+        }
+      }
+
+      async function loadPrices() {
+        setStatus('', 'Loading…');
+        const utility = (document.getElementById('utility').value || 'PGE').toUpperCase();
+        const program = document.getElementById('program').value || 'CalFUSE';
+        const market = 'DAM';
+        const ratename = document.getElementById('ratename').value || 'EV2A';
+        const representativeCircuitId = (document.getElementById('circuit').value || '').padStart(9, '0');
+        const cca = document.getElementById('cca').value || '';
+        const env = document.getElementById('env').value || 'prod';
+
+        const day = selectedDay || todayInPT();
+        try {
+          const json = await fetchPricing({ utility, market, program, startdate: day, enddate: day, ratename, representativeCircuitId, cca, env });
+          if (json.meta?.code === 204) {
+            setStatus('warn', 'No data (HTTP 204). Try again after ~4:30–6:30pm PT.');
+            lastRows = [];
+            renderRows(lastRows);
+            renderChart(lastRows);
+            return;
+          }
+          lastRows = extractRows(json.data);
+          renderRows(lastRows);
+          renderChart(lastRows);
+          const days = (json.data || []).length;
+          const intervals = lastRows.length;
+          setStatus('ok', `Loaded ${intervals} intervals across ${days} day(s).`);
+        } catch (err) {
+          console.error(err);
+          setStatus('err', err.message);
+        }
+      }
+
+      // ==== Day selector logic ====
+      function setActiveToggle(which) {
+        for (const id of ['btnYesterday','btnToday','btnTomorrow','btnCustom']) {
+          document.getElementById(id).classList.remove('active');
+        }
+        document.getElementById(which).classList.add('active');
+        // Show/hide custom date input
+        const picker = document.getElementById('customDay');
+        picker.style.display = (which === 'btnCustom') ? 'inline-block' : 'none';
+      }
+
+      function selectDay(offset, whichId) {
+        selectedDay = yyyymmddInTZ(ptDateWithOffset(offset), PT);
+        setActiveToggle(whichId);
+        loadPrices();
+      }
+
+      function selectCustom() {
+        setActiveToggle('btnCustom');
+        const picker = document.getElementById('customDay');
+        // Pre-fill with today (PT) if empty
+        if (!picker.value) picker.value = dashedFromYYYYMMDD(todayInPT());
+        // Set selectedDay from picker and load
+        const ymd = YYYYMMDDFromDashed(picker.value);
+        if (/^[0-9]{8}$/.test(ymd)) {
+          selectedDay = ymd;
+          loadPrices();
+        } else {
+          setStatus('err', 'Custom date must be YYYY-MM-DD.');
+        }
+      }
+
+      // ==== Wire up UI ====
+      document.getElementById('loadBtn').addEventListener('click', loadPrices);
+      document.getElementById('btnToday').addEventListener('click', () => selectDay(0, 'btnToday'));
+      document.getElementById('btnYesterday').addEventListener('click', () => selectDay(-1, 'btnYesterday'));
+      document.getElementById('btnTomorrow').addEventListener('click', () => selectDay(1, 'btnTomorrow'));
+      document.getElementById('btnCustom').addEventListener('click', selectCustom);
+      document.getElementById('customDay').addEventListener('change', () => {
+        const ymd = YYYYMMDDFromDashed(document.getElementById('customDay').value);
+        if (/^[0-9]{8}$/.test(ymd)) { selectedDay = ymd; loadPrices(); }
+      });
+      setTZPill();
+
+      // Default to today (PT) and auto-load
+      (function init() {
+        selectedDay = todayInPT();
+        setActiveToggle('btnToday');
+        loadPrices();
+      })();
+
+      // Re-render chart on resize
+      window.addEventListener('resize', () => renderChart(lastRows));
+    </script>
+  </body>
+</html>
