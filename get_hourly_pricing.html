@@ -317,9 +317,10 @@
         }
 
         const values = rows.map(r => Number(r.intervalPrice) * 100); // cents
-        let minV = Math.min(...values);
-        let maxV = Math.max(...values);
-        if (minV === maxV) { minV -= 1; maxV += 1; }
+        let minV = 0;
+        const maxData = Math.max(...values);
+        let maxV = Math.max(7.0, isFinite(maxData) ? maxData : 0);
+        if (maxV <= 0) maxV = 7.0;
 
         // Nice ticks (5)
         const ticks = 5;
