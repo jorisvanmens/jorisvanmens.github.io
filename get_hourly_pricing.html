@@ -63,11 +63,16 @@
       .pill { font-size: 12px; color: #061221; background: var(--accent); border-radius: 999px; padding: 2px 8px; font-weight: 700; }
       .help { color: var(--muted); font-size: 12px; }
       .footnote { color: var(--muted); font-size: 12px; padding: 12px 16px 18px; }
-      .chart-wrap { padding: 12px 16px 6px; }
+      .chart-wrap { padding: 12px 16px 6px; position: relative; }
       #chart { width: 100%; height: 260px; display:block; }
       @media (max-width: 800px) {
         .controls { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         .controls .field { grid-column: span 2; }
+      }
+      .tooltip {
+        position: absolute; pointer-events: none; transform: translate(-50%, -120%);
+        background: rgba(18,26,51,0.95); color: var(--text); border: 1px solid rgba(255,255,255,0.15);
+        padding: 6px 8px; border-radius: 10px; font-size: 12px; white-space: nowrap;
       }
     </style>
   </head>
@@ -155,6 +160,7 @@
         <div class="chart-wrap">
           <canvas id="chart"></canvas>
           <div class="help" id="chartCaption">Price shown in ¢/kWh</div>
+          <div id="chartTooltip" class="tooltip" style="display:none;"></div>
         </div>
 
         <div class="scroll" style="max-height: 60vh;">
@@ -180,6 +186,25 @@
       const PT = 'America/Los_Angeles';
       let lastRows = [];
       let selectedDay = null; // YYYYMMDD in PT
+      let activeMode = 'today'; // 'yesterday' | 'today' | 'tomorrow' | 'custom'
+      let lastPoints = []; // {x,y,label,valueCents}
+      let tooltipIndex = null; // index into lastPoints
+
+      // === Cookie helpers ===
+      function setCookie(name, value, days) {
+        const d = new Date();
+        d.setTime(d.getTime() + (days*24*60*60*1000));
+        document.cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value)}; expires=${d.toUTCString()}; path=/`;
+      }
+      function getCookie(name) {
+        const key = encodeURIComponent(name) + '=';
+        const ca = document.cookie.split(';');
+        for (let c of ca) {
+          c = c.trim();
+          if (c.indexOf(key) === 0) return decodeURIComponent(c.substring(key.length));
+        }
+        return '';
+      }
 
       function formatParts(date, timeZone) {
         const parts = new Intl.DateTimeFormat('en-US', {
@@ -288,8 +313,36 @@
         }
       }
 
+      function drawNowLine(ctx, pad, cssW, cssH, rows) {
+        if (activeMode !== 'today' || !rows || rows.length === 0) return;
+        const nowPT = new Date(new Date().toLocaleString('en-US', { timeZone: PT }));
+        const ymdNowPT = yyyymmddInTZ(nowPT, PT);
+        if (ymdNowPT !== selectedDay) return; // safety
+
+        const n = rows.length;
+        const t0 = new Date(normalizeIso(rows[0].startIntervalTimeStamp)).getTime();
+        const t1 = new Date(normalizeIso(rows[n-1].startIntervalTimeStamp)).getTime();
+        const step = n > 1 ? (new Date(normalizeIso(rows[1].startIntervalTimeStamp)).getTime() - t0) : 60*60*1000;
+        const tEnd = t1 + step; // end boundary
+        const tNow = nowPT.getTime();
+        const clamp = (x,min,max) => Math.max(min, Math.min(max, x));
+        const frac = clamp((tNow - t0) / (tEnd - t0), 0, 1);
+        const x = pad.left + frac * (cssW - pad.left - pad.right);
+
+        ctx.save();
+        ctx.setLineDash([5,4]);
+        ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--warn') || '#f59e0b';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(x, pad.top);
+        ctx.lineTo(x, cssH - pad.bottom);
+        ctx.stroke();
+        ctx.restore();
+      }
+
       function renderChart(rows) {
         const canvas = document.getElementById('chart');
+        const tooltipEl = document.getElementById('chartTooltip');
         const ctx = canvas.getContext('2d');
         // Resize for HiDPI
         const dpr = window.devicePixelRatio || 1;
@@ -297,6 +350,7 @@
         const cssH = canvas.clientHeight;
         canvas.width = Math.max(1, Math.floor(cssW * dpr));
         canvas.height = Math.max(1, Math.floor(cssH * dpr));
+        ctx.setTransform(1,0,0,1,0,0);
         ctx.scale(dpr, dpr);
 
         // Clear
@@ -309,8 +363,12 @@
         const plotW = cssW - pad.left - pad.right;
         const plotH = cssH - pad.top - pad.bottom;
 
+        lastPoints = [];
+
         // No data
         if (!rows || rows.length === 0) {
+          tooltipIndex = null;
+          tooltipEl.style.display = 'none';
           ctx.fillStyle = 'rgba(226,232,240,0.8)';
           ctx.fillText('No data to chart', pad.left + 6, pad.top + 16);
           return;
@@ -367,25 +425,55 @@
         }
         ctx.stroke();
 
-        // Points
+        // Points + cache positions for hit-testing
         ctx.fillStyle = 'rgba(96,165,250,0.9)';
         for (let i = 0; i < n; i++) {
           const v = values[i];
           const x = pad.left + (n === 1 ? plotW/2 : (i * (plotW / (n - 1))));
           const y = pad.top + (maxV - v) * (plotH / (maxV - minV));
+          lastPoints.push({ x, y, valueCents: v, date: new Date(normalizeIso(rows[i].startIntervalTimeStamp)) });
           ctx.beginPath(); ctx.arc(x, y, 2.5, 0, Math.PI*2); ctx.fill();
+        }
+
+        // Draw vertical NOW line if "Today" is chosen
+        drawNowLine(ctx, pad, cssW, cssH, rows);
+
+        // Tooltip (if active)
+        if (tooltipIndex != null && lastPoints[tooltipIndex]) {
+          const p = lastPoints[tooltipIndex];
+          const pt = formatParts(p.date, PT);
+          const txt = `${pt.hour}:00 — ${p.valueCents.toFixed(1)} ¢/kWh`;
+          const tw = ctx.measureText(txt).width;
+          const tx = Math.min(cssW - 6, Math.max(6, p.x));
+          const ty = Math.max(6, p.y);
+          // Also update DOM tooltip for accessibility/clarity
+          const tt = document.getElementById('chartTooltip');
+          tt.textContent = txt;
+          tt.style.left = `${tx}px`;
+          tt.style.top = `${ty}px`;
+          tt.style.display = 'block';
+        } else {
+          tooltipEl.style.display = 'none';
         }
       }
 
       async function loadPrices() {
         setStatus('', 'Loading…');
+        const circuitEl = document.getElementById('circuit');
+        const rateEl = document.getElementById('ratename');
+        const ccaEl = document.getElementById('cca');
         const utility = (document.getElementById('utility').value || 'PGE').toUpperCase();
         const program = document.getElementById('program').value || 'CalFUSE';
         const market = 'DAM';
-        const ratename = document.getElementById('ratename').value || 'EV2A';
-        const representativeCircuitId = (document.getElementById('circuit').value || '').padStart(9, '0');
-        const cca = document.getElementById('cca').value || '';
+        const ratename = rateEl.value || 'EV2A';
+        const representativeCircuitId = (circuitEl.value || '').padStart(9, '0');
+        const cca = ccaEl.value || '';
         const env = document.getElementById('env').value || 'prod';
+
+        // Persist preferences (cookie for 180 days)
+        setCookie('gl_circuit', representativeCircuitId, 180);
+        setCookie('gl_ratename', ratename, 180);
+        setCookie('gl_cca', cca, 180);
 
         const day = selectedDay || todayInPT();
         try {
@@ -398,6 +486,7 @@
             return;
           }
           lastRows = extractRows(json.data);
+          tooltipIndex = null; // reset any selection on reload
           renderRows(lastRows);
           renderChart(lastRows);
           const days = (json.data || []).length;
@@ -420,13 +509,15 @@
         picker.style.display = (which === 'btnCustom') ? 'inline-block' : 'none';
       }
 
-      function selectDay(offset, whichId) {
+      function selectDay(offset, whichId, mode) {
         selectedDay = yyyymmddInTZ(ptDateWithOffset(offset), PT);
+        activeMode = mode;
         setActiveToggle(whichId);
         loadPrices();
       }
 
       function selectCustom() {
+        activeMode = 'custom';
         setActiveToggle('btnCustom');
         const picker = document.getElementById('customDay');
         // Pre-fill with today (PT) if empty
@@ -441,27 +532,71 @@
         }
       }
 
+      // ==== Chart interactivity (click/tap) ====
+      function canvasPointFromEvent(evt, canvas) {
+        const rect = canvas.getBoundingClientRect();
+        const x = (evt.touches ? evt.touches[0].clientX : evt.clientX) - rect.left;
+        const y = (evt.touches ? evt.touches[0].clientY : evt.clientY) - rect.top;
+        return { x, y };
+      }
+      function handleCanvasClick(evt) {
+        const canvas = document.getElementById('chart');
+        const pt = canvasPointFromEvent(evt, canvas);
+        let best = { idx: -1, dist2: Infinity };
+        for (let i = 0; i < lastPoints.length; i++) {
+          const p = lastPoints[i];
+          const dx = p.x - pt.x, dy = p.y - pt.y;
+          const d2 = dx*dx + dy*dy;
+          if (d2 < best.dist2) best = { idx: i, dist2: d2 };
+        }
+        const radius = 12; // px
+        if (best.idx !== -1 && best.dist2 <= radius*radius) {
+          tooltipIndex = best.idx;
+          renderChart(lastRows);
+        }
+      }
+
       // ==== Wire up UI ====
       document.getElementById('loadBtn').addEventListener('click', loadPrices);
-      document.getElementById('btnToday').addEventListener('click', () => selectDay(0, 'btnToday'));
-      document.getElementById('btnYesterday').addEventListener('click', () => selectDay(-1, 'btnYesterday'));
-      document.getElementById('btnTomorrow').addEventListener('click', () => selectDay(1, 'btnTomorrow'));
+      document.getElementById('btnToday').addEventListener('click', () => selectDay(0, 'btnToday', 'today'));
+      document.getElementById('btnYesterday').addEventListener('click', () => selectDay(-1, 'btnYesterday', 'yesterday'));
+      document.getElementById('btnTomorrow').addEventListener('click', () => selectDay(1, 'btnTomorrow', 'tomorrow'));
       document.getElementById('btnCustom').addEventListener('click', selectCustom);
       document.getElementById('customDay').addEventListener('change', () => {
         const ymd = YYYYMMDDFromDashed(document.getElementById('customDay').value);
-        if (/^[0-9]{8}$/.test(ymd)) { selectedDay = ymd; loadPrices(); }
+        if (/^[0-9]{8}$/.test(ymd)) { selectedDay = ymd; activeMode = 'custom'; loadPrices(); }
       });
       setTZPill();
+
+      // Persisted preferences: load cookies
+      (function loadPrefs() {
+        const circuit = getCookie('gl_circuit');
+        const rate = getCookie('gl_ratename');
+        const cca = getCookie('gl_cca');
+        if (circuit) document.getElementById('circuit').value = circuit;
+        if (rate) document.getElementById('ratename').value = rate;
+        if (cca) document.getElementById('cca').value = cca;
+        // Save on change as well
+        document.getElementById('circuit').addEventListener('change', (e) => setCookie('gl_circuit', (e.target.value||'').padStart(9,'0'), 180));
+        document.getElementById('ratename').addEventListener('change', (e) => setCookie('gl_ratename', e.target.value||'', 180));
+        document.getElementById('cca').addEventListener('change', (e) => setCookie('gl_cca', e.target.value||'', 180));
+      })();
 
       // Default to today (PT) and auto-load
       (function init() {
         selectedDay = todayInPT();
+        activeMode = 'today';
         setActiveToggle('btnToday');
         loadPrices();
       })();
 
       // Re-render chart on resize
       window.addEventListener('resize', () => renderChart(lastRows));
+
+      // Click / tap interactivity
+      const canvasEl = document.getElementById('chart');
+      canvasEl.addEventListener('click', handleCanvasClick);
+      canvasEl.addEventListener('touchstart', (e) => { handleCanvasClick(e); }, { passive: true });
     </script>
   </body>
 </html>
