@@ -266,7 +266,7 @@
 
         .welcome-content {
             text-align: center;
-            padding: 30px 20px;
+            padding: 10px 20px 30px 20px;
         }
 
         .welcome-logo {
@@ -1193,7 +1193,7 @@
                 <p>Two major AI commerce protocols are emerging with the promise to enable secure, agent-initiated payments. Complete both levels to learn their fundamentals:</p>
 
                 <div class="track-selection">
-                    <div class="track-card acp" style="cursor: default;">
+                    <div class="track-card acp" onclick="startGame()">
                         <div style="font-size: 0.75rem; color: var(--secondary); margin-bottom: 8px; font-weight: 600;">LEVEL 1</div>
                         <h3>ACP</h3>
                         <div class="track-subtitle">Stripe & OpenAI</div>
@@ -1618,7 +1618,7 @@
             </div>
 
             <div class="nav-buttons">
-                <button class="btn btn-secondary" onclick="goToLevel('levelTransition')">← Back</button>
+                <button class="btn btn-secondary" onclick="goToWelcome()">← Back</button>
                 <button class="btn btn-google" id="ap21Next" onclick="goToLevel('ap22')" disabled>Continue →</button>
             </div>
         </div>
