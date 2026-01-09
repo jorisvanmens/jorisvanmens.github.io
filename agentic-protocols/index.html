@@ -1205,7 +1205,7 @@
                         <h3>AP2</h3>
                         <div class="track-subtitle">Google</div>
                         <div class="track-desc">Learn about the three mandates, Verifiable Digital Credentials, and cryptographic audit trails.</div>
-                        <div class="track-meta">5 missions</div>
+                        <div class="track-meta">6 missions</div>
                     </div>
                 </div>
 
@@ -1213,7 +1213,7 @@
                     <button class="btn btn-primary" onclick="startGame()" style="font-size: 1.2rem; padding: 18px 50px;">
                         Start your mission →
                     </button>
-                    <p style="margin-top: 15px; font-size: 0.85rem; color: var(--gray);">~5 minutes • 11 missions total</p>
+                    <p style="margin-top: 15px; font-size: 0.85rem; color: var(--gray);">~5 minutes • 12 missions total</p>
                 </div>
             </div>
         </div>
@@ -1542,7 +1542,7 @@
         <!-- AP2 Level 1: The Three Mandates -->
         <div class="game-screen" id="ap21Screen">
             <div class="level-header">
-                <span class="level-badge ap2">Level 2: AP2 • Mission 1 of 5</span>
+                <span class="level-badge ap2">Level 2: AP2 • Mission 1 of 6</span>
                 <h2>The Three Mandates</h2>
                 <p>AP2's staged authorization model</p>
             </div>
@@ -1626,7 +1626,7 @@
         <!-- AP2 Level 2: Verifiable Digital Credentials -->
         <div class="game-screen" id="ap22Screen">
             <div class="level-header">
-                <span class="level-badge ap2">Level 2: AP2 • Mission 2 of 5</span>
+                <span class="level-badge ap2">Level 2: AP2 • Mission 2 of 6</span>
                 <h2>Verifiable Digital Credentials</h2>
                 <p>The cryptographic primitive that makes mandates tamper-proof</p>
             </div>
@@ -1671,14 +1671,14 @@
 
             <div class="nav-buttons">
                 <button class="btn btn-secondary" onclick="goToLevel('ap21')">← Back</button>
-                <button class="btn btn-google" id="ap22Next" onclick="goToLevel('ap23')" disabled>Continue →</button>
+                <button class="btn btn-google" id="ap22Next" onclick="goToLevel('ap25')" disabled>Continue →</button>
             </div>
         </div>
 
         <!-- AP2 Level 3: Human-Not-Present -->
         <div class="game-screen" id="ap23Screen">
             <div class="level-header">
-                <span class="level-badge ap2">Level 2: AP2 • Mission 3 of 5</span>
+                <span class="level-badge ap2">Level 2: AP2 • Mission 4 of 6</span>
                 <h2>Human-Present vs Human-Not-Present</h2>
                 <p>How the mandate chain handles autonomous agent actions</p>
             </div>
@@ -1719,7 +1719,7 @@
             </div>
 
             <div class="nav-buttons">
-                <button class="btn btn-secondary" onclick="goToLevel('ap22')">← Back</button>
+                <button class="btn btn-secondary" onclick="goToLevel('ap25')">← Back</button>
                 <button class="btn btn-google" id="ap23Next" onclick="goToLevel('ap24')" disabled>Continue →</button>
             </div>
         </div>
@@ -1727,7 +1727,7 @@
         <!-- AP2 Level 4: Audit Trail -->
         <div class="game-screen" id="ap24Screen">
             <div class="level-header">
-                <span class="level-badge ap2">Level 2: AP2 • Mission 4 of 5</span>
+                <span class="level-badge ap2">Level 2: AP2 • Mission 5 of 6</span>
                 <h2>The Cryptographic Audit Trail</h2>
                 <p>How the signed mandate chain resolves disputes</p>
             </div>
@@ -1780,14 +1780,14 @@
 
             <div class="nav-buttons">
                 <button class="btn btn-secondary" onclick="goToLevel('ap23')">← Back</button>
-                <button class="btn btn-google" id="ap24Next" onclick="goToLevel('ap25')" disabled>Continue →</button>
+                <button class="btn btn-google" id="ap24Next" onclick="goToLevel('ap26')" disabled>Continue →</button>
             </div>
         </div>
 
         <!-- AP2 Level 5: Roles -->
         <div class="game-screen" id="ap25Screen">
             <div class="level-header">
-                <span class="level-badge ap2">Level 2: AP2 • Mission 5 of 5</span>
+                <span class="level-badge ap2">Level 2: AP2 • Mission 3 of 6</span>
                 <h2>The Four Key Roles</h2>
                 <p>Understanding who does what in the AP2 ecosystem</p>
             </div>
@@ -1840,8 +1840,24 @@
             </div>
 
             <div class="nav-buttons">
+                <button class="btn btn-secondary" onclick="goToLevel('ap22')">← Back</button>
+                <button class="btn btn-google" id="ap25Next" onclick="goToLevel('ap23')" disabled>Continue →</button>
+            </div>
+        </div>
+
+        <!-- AP2 Level 6: Final Quiz -->
+        <div class="game-screen" id="ap26Screen">
+            <div class="level-header">
+                <span class="level-badge ap2">Level 2: AP2 • Mission 6 of 6</span>
+                <h2>AP2 Knowledge Check</h2>
+                <p>Test your understanding of AP2 architecture</p>
+            </div>
+
+            <div class="quiz-container" id="ap2FinalQuiz"></div>
+
+            <div class="nav-buttons">
                 <button class="btn btn-secondary" onclick="goToLevel('ap24')">← Back</button>
-                <button class="btn btn-success" id="ap25Next" onclick="showFinalResults()" disabled>Complete Training 🎓</button>
+                <button class="btn btn-success" id="ap26Next" onclick="showFinalResults()" disabled>Complete Training 🎓</button>
             </div>
         </div>
 
@@ -1898,15 +1914,15 @@
                 color: 'var(--primary)'
             },
             ap2: {
-                levels: ['ap21', 'ap22', 'ap23', 'ap24', 'ap25'],
+                levels: ['ap21', 'ap22', 'ap25', 'ap23', 'ap24', 'ap26'],
                 name: 'Level 2: AP2',
                 levelNum: 2,
-                maxScore: 75,
+                maxScore: 95,
                 color: 'var(--google-blue)'
             }
         };
 
-        const totalMaxScore = 190; // Combined max score for both levels
+        const totalMaxScore = 210; // Combined max score for both levels
 
         // Initialize particles
         function createParticles() {
@@ -2116,6 +2132,7 @@
             updateProgress();
 
             if (levelId === 'acp6') initAcpFinalQuiz();
+            if (levelId === 'ap26') initAp2FinalQuiz();
         }
 
         function updateProgress() {
@@ -2320,6 +2337,70 @@
             acpFinalAnswered++;
             if (acpFinalAnswered === acpFinalQuestions.length) {
                 document.getElementById('acp6Next').disabled = false;
+            }
+        }
+
+        // AP2 Final Quiz
+        const ap2FinalQuestions = [
+            {
+                q: 'In Mission 1, we learned about the three mandates. If an agent purchases something that exceeds the Intent Mandate\'s constraints, who is responsible?',
+                options: ['The merchant who accepted the payment', 'The agent platform—they exceeded the authorized constraints', 'The payment processor who approved it'],
+                correct: 1
+            },
+            {
+                q: 'Based on Mission 3: which role is responsible for issuing and managing VDCs that prove identity and authorization?',
+                options: ['The Payment Processor', 'The Merchant', 'The Credentials Provider'],
+                correct: 2
+            }
+        ];
+
+        let ap2FinalAnswered = 0;
+
+        function initAp2FinalQuiz() {
+            const container = document.getElementById('ap2FinalQuiz');
+            container.innerHTML = '';
+            ap2FinalAnswered = 0;
+
+            ap2FinalQuestions.forEach((q, qIndex) => {
+                const qDiv = document.createElement('div');
+                qDiv.style.marginBottom = '30px';
+                qDiv.innerHTML = `
+                    <p class="quiz-question">${qIndex + 1}. ${q.q}</p>
+                    <div class="quiz-options" id="ap2FinalQ${qIndex}">
+                        ${q.options.map((opt, oIndex) => `
+                            <div class="quiz-option" onclick="checkAp2FinalAnswer(${qIndex}, ${oIndex}, ${q.correct})">
+                                <span class="option-letter">${['A', 'B', 'C'][oIndex]}</span>
+                                <span class="option-text">${opt}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                container.appendChild(qDiv);
+            });
+        }
+
+        function checkAp2FinalAnswer(qIndex, selected, correct) {
+            const container = document.getElementById(`ap2FinalQ${qIndex}`);
+            if (container.classList.contains('answered')) return;
+
+            container.classList.add('answered');
+            const options = container.querySelectorAll('.quiz-option');
+
+            options.forEach((opt, i) => {
+                opt.classList.add('disabled');
+                if (i === correct) opt.classList.add('correct');
+                else if (i === selected && selected !== correct) opt.classList.add('incorrect');
+            });
+
+            if (selected === correct) {
+                score += 10;
+                document.getElementById('scoreDisplay').textContent = score;
+                showConfetti();
+            }
+
+            ap2FinalAnswered++;
+            if (ap2FinalAnswered === ap2FinalQuestions.length) {
+                document.getElementById('ap26Next').disabled = false;
             }
         }
 
