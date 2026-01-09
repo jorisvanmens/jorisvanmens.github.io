@@ -1,0 +1,2371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agentic Commerce Academy - Learn ACP & AP2</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #635bff;
+            --primary-dark: #4b44c9;
+            --secondary: #00d4aa;
+            --accent: #ff6b6b;
+            --google-blue: #4285f4;
+            --google-green: #34a853;
+            --dark: #1a1a2e;
+            --darker: #0f0f1a;
+            --light: #f0f0f7;
+            --gray: #6b7280;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--darker);
+            color: var(--light);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
+        }
+
+        .bg-animation::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(circle at 20% 80%, rgba(99, 91, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(0, 212, 170, 0.15) 0%, transparent 50%);
+            animation: pulse 8s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--primary);
+            border-radius: 50%;
+            opacity: 0.3;
+            animation: float 15s infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.3; }
+            90% { opacity: 0.3; }
+            100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+        }
+
+        .game-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            text-align: center;
+            padding: 15px 0;
+            margin-bottom: 15px;
+        }
+
+        .header-logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 10px;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .header-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 5px;
+        }
+
+        .header .subtitle {
+            color: var(--gray);
+            font-size: 0.95rem;
+        }
+
+        .progress-container {
+            background: var(--dark);
+            border-radius: 20px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(99, 91, 255, 0.2);
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .progress-header span {
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+
+        .track-indicator {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .track-indicator.acp {
+            background: rgba(99, 91, 255, 0.2);
+            color: var(--primary);
+        }
+
+        .track-indicator.ap2 {
+            background: rgba(66, 133, 244, 0.2);
+            color: var(--google-blue);
+        }
+
+        .score {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            color: var(--secondary);
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: rgba(99, 91, 255, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .progress-fill.ap2 {
+            background: linear-gradient(90deg, var(--google-blue), var(--google-green));
+        }
+
+        .level-dots {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            padding: 0 5px;
+        }
+
+        .level-dot {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: var(--darker);
+            border: 2px solid var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .level-dot.ap2-dot {
+            border-color: var(--google-blue);
+        }
+
+        .level-dot.completed {
+            background: var(--secondary);
+            border-color: var(--secondary);
+            color: var(--darker);
+        }
+
+        .level-dot.current {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+            box-shadow: 0 0 20px rgba(99, 91, 255, 0.5);
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        .level-dot.current.ap2-dot {
+            background: var(--google-blue);
+            border-color: var(--google-blue);
+            box-shadow: 0 0 20px rgba(66, 133, 244, 0.5);
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(99, 91, 255, 0.5); }
+            50% { box-shadow: 0 0 30px rgba(99, 91, 255, 0.8); }
+        }
+
+        .game-screen {
+            flex: 1;
+            background: var(--dark);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid rgba(99, 91, 255, 0.2);
+            display: none;
+        }
+
+        .game-screen.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .welcome-content {
+            text-align: center;
+            padding: 30px 20px;
+        }
+
+        .welcome-logo {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 20px;
+            animation: logoFloat 3s ease-in-out infinite;
+        }
+
+        .welcome-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        @keyframes logoFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .welcome-content h2 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+        }
+
+        .welcome-content p {
+            color: var(--gray);
+            font-size: 1rem;
+            line-height: 1.6;
+            max-width: 600px;
+            margin: 0 auto 25px;
+        }
+
+        .track-selection {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+
+        .track-card {
+            background: var(--darker);
+            border-radius: 20px;
+            padding: 25px;
+            width: 280px;
+            text-align: center;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .track-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .track-card.acp {
+            border-color: rgba(99, 91, 255, 0.3);
+        }
+
+        .track-card.acp:hover {
+            border-color: var(--primary);
+            box-shadow: 0 10px 30px rgba(99, 91, 255, 0.2);
+        }
+
+        .track-card.ap2 {
+            border-color: rgba(66, 133, 244, 0.3);
+        }
+
+        .track-card.ap2:hover {
+            border-color: var(--google-blue);
+            box-shadow: 0 10px 30px rgba(66, 133, 244, 0.2);
+        }
+
+        .track-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 5px;
+        }
+
+        .track-card .track-subtitle {
+            font-size: 0.8rem;
+            color: var(--gray);
+            margin-bottom: 15px;
+        }
+
+        .track-card .track-desc {
+            font-size: 0.9rem;
+            color: var(--gray);
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .track-card .track-meta {
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+
+        .btn {
+            padding: 15px 40px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            box-shadow: 0 4px 20px rgba(99, 91, 255, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 30px rgba(99, 91, 255, 0.6);
+        }
+
+        .btn-google {
+            background: linear-gradient(135deg, var(--google-blue), #357abd);
+            color: white;
+            box-shadow: 0 4px 20px rgba(66, 133, 244, 0.4);
+        }
+
+        .btn-google:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 30px rgba(66, 133, 244, 0.6);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--secondary), #00b894);
+            color: var(--darker);
+        }
+
+        .level-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .level-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            background: rgba(99, 91, 255, 0.2);
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .level-badge.ap2 {
+            background: rgba(66, 133, 244, 0.2);
+            color: var(--google-blue);
+        }
+
+        .level-header h2 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        .level-header p {
+            color: var(--gray);
+        }
+
+        .diagram-container {
+            background: var(--darker);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+        }
+
+        .three-parties {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .party-card {
+            background: var(--dark);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            width: 200px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .party-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+        }
+
+        .party-card.selected {
+            border-color: var(--secondary);
+            box-shadow: 0 0 20px rgba(0, 212, 170, 0.3);
+        }
+
+        .party-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .party-card h3 {
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+        }
+
+        .party-card p {
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+
+        .flow-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .flow-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .flow-icon {
+            width: 60px;
+            height: 60px;
+            background: var(--dark);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            border: 2px solid var(--primary);
+            transition: all 0.3s ease;
+        }
+
+        .flow-icon.active {
+            background: var(--primary);
+            animation: flowPulse 0.5s ease;
+        }
+
+        @keyframes flowPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .flow-label {
+            font-size: 0.75rem;
+            color: var(--gray);
+            text-align: center;
+            max-width: 80px;
+        }
+
+        .flow-arrow {
+            font-size: 1.5rem;
+            color: var(--primary);
+            opacity: 0.5;
+        }
+
+        .flow-arrow.active {
+            opacity: 1;
+            color: var(--secondary);
+        }
+
+        .token-demo {
+            background: var(--darker);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+
+        .token-visual {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .card-display {
+            background: linear-gradient(135deg, #1a1a2e, #2d2d44);
+            border-radius: 12px;
+            padding: 20px 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-display::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(99, 91, 255, 0.1), transparent);
+        }
+
+        .card-number {
+            font-family: 'Courier New', monospace;
+            font-size: 1.2rem;
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+        }
+
+        .card-label {
+            font-size: 0.75rem;
+            color: var(--gray);
+        }
+
+        .transform-arrow {
+            font-size: 2rem;
+            color: var(--secondary);
+            animation: arrowPulse 1s ease-in-out infinite;
+        }
+
+        @keyframes arrowPulse {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(5px); }
+        }
+
+        .token-display {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 12px;
+            padding: 20px 30px;
+        }
+
+        .token-display .token-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .token-display .token-text {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .spt-spec, .mandate-spec {
+            background: var(--darker);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+
+        .spt-json, .mandate-json {
+            background: #1e1e2e;
+            border-radius: 10px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            overflow-x: auto;
+            border: 1px solid rgba(99, 91, 255, 0.3);
+        }
+
+        .json-key { color: #7dd3fc; }
+        .json-string { color: #86efac; }
+        .json-number { color: #fcd34d; }
+        .json-comment { color: #6b7280; font-style: italic; }
+
+        .guardrail-cards, .mandate-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .guardrail-card, .mandate-card {
+            background: var(--dark);
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid rgba(99, 91, 255, 0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .guardrail-card:hover, .mandate-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .guardrail-card.highlighted, .mandate-card.highlighted {
+            border-color: var(--secondary);
+            background: rgba(0, 212, 170, 0.1);
+        }
+
+        .guardrail-card h4, .mandate-card h4 {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+
+        .guardrail-card p, .mandate-card p {
+            font-size: 0.8rem;
+            color: var(--gray);
+            line-height: 1.4;
+        }
+
+        .quiz-container {
+            margin: 20px 0;
+        }
+
+        .quiz-question {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .quiz-option {
+            background: var(--darker);
+            border: 2px solid rgba(99, 91, 255, 0.2);
+            border-radius: 12px;
+            padding: 15px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .quiz-option:hover {
+            border-color: var(--primary);
+            background: rgba(99, 91, 255, 0.1);
+        }
+
+        .quiz-option.correct {
+            border-color: var(--secondary);
+            background: rgba(0, 212, 170, 0.2);
+            animation: correctPop 0.5s ease;
+        }
+
+        @keyframes correctPop {
+            0% { transform: scale(1); }
+            30% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        .quiz-option.correct::after {
+            content: '✓';
+            position: absolute;
+            right: 20px;
+            font-size: 1.5rem;
+            color: var(--secondary);
+            animation: checkmarkPop 0.4s ease;
+        }
+
+        @keyframes checkmarkPop {
+            0% { transform: scale(0) rotate(-45deg); opacity: 0; }
+            50% { transform: scale(1.3) rotate(10deg); }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+
+        .quiz-option.incorrect {
+            border-color: var(--accent);
+            background: rgba(255, 107, 107, 0.2);
+        }
+
+        .quiz-option.disabled {
+            pointer-events: none;
+        }
+
+        .option-letter {
+            width: 30px;
+            height: 30px;
+            background: var(--dark);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .quiz-option.correct .option-letter {
+            background: var(--secondary);
+            color: var(--darker);
+        }
+
+        .option-text {
+            flex: 1;
+        }
+
+        /* Confetti animation for correct answers - green shades with color shift */
+        .confetti-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+            overflow: hidden;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            animation: confettiFall 3s ease-out forwards, greenColorShift 1.5s ease-in-out infinite;
+        }
+
+        @keyframes confettiFall {
+            0% {
+                transform: translateY(-100px) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        @keyframes greenColorShift {
+            0% { filter: hue-rotate(0deg) brightness(1); }
+            25% { filter: hue-rotate(15deg) brightness(1.2); }
+            50% { filter: hue-rotate(-15deg) brightness(0.9); }
+            75% { filter: hue-rotate(10deg) brightness(1.1); }
+            100% { filter: hue-rotate(0deg) brightness(1); }
+        }
+
+        .simulation {
+            background: var(--darker);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+
+        .sim-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .sim-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sim-status {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            background: rgba(99, 91, 255, 0.2);
+            color: var(--primary);
+        }
+
+        .sim-status.success {
+            background: rgba(0, 212, 170, 0.2);
+            color: var(--secondary);
+        }
+
+        .chat-container {
+            background: var(--dark);
+            border-radius: 12px;
+            padding: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+
+        .chat-message {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 15px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .chat-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .chat-avatar.user { background: var(--primary); }
+        .chat-avatar.agent { background: var(--secondary); }
+        .chat-avatar.system { background: var(--gray); }
+
+        .chat-bubble {
+            background: var(--darker);
+            border-radius: 12px;
+            padding: 12px 16px;
+            max-width: 80%;
+        }
+
+        .chat-bubble.highlight {
+            border: 1px solid var(--secondary);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 10px 20px;
+            background: var(--dark);
+            border: 2px solid var(--primary);
+            border-radius: 10px;
+            color: var(--light);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .action-btn:hover { background: var(--primary); }
+        .action-btn.correct {
+            border-color: var(--secondary);
+            background: var(--secondary);
+            color: var(--darker);
+        }
+        .action-btn.wrong {
+            border-color: var(--accent);
+            background: rgba(255, 107, 107, 0.2);
+        }
+        .action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .results-content {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .results-icon {
+            font-size: 5rem;
+            margin-bottom: 20px;
+        }
+
+        .results-content h2 {
+            font-size: 2rem;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .final-score {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--secondary);
+            margin: 20px 0;
+        }
+
+        .score-breakdown {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .score-item { text-align: center; }
+        .score-item .number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        .score-item .label {
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+
+        .key-learnings {
+            background: var(--darker);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 30px 0;
+            text-align: left;
+        }
+
+        .key-learnings h3 {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .key-learnings ul { list-style: none; }
+        .key-learnings li {
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(99, 91, 255, 0.1);
+            display: flex;
+            align-items: start;
+            gap: 12px;
+        }
+        .key-learnings li:last-child { border-bottom: none; }
+        .check-icon { color: var(--secondary); font-size: 1.2rem; }
+
+        .info-box {
+            background: rgba(99, 91, 255, 0.1);
+            border-left: 4px solid var(--primary);
+            border-radius: 0 12px 12px 0;
+            padding: 15px 20px;
+            margin: 20px 0;
+        }
+
+        .info-box.ap2 {
+            background: rgba(66, 133, 244, 0.1);
+            border-left-color: var(--google-blue);
+        }
+
+        .info-box p {
+            color: var(--light);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            gap: 15px;
+        }
+
+        .example-scenario {
+            background: var(--darker);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .scenario-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .scenario-step {
+            display: flex;
+            gap: 15px;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(99, 91, 255, 0.1);
+        }
+
+        .scenario-step:last-child { border-bottom: none; }
+
+        .step-number {
+            width: 28px;
+            height: 28px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .step-number.ap2 {
+            background: var(--google-blue);
+        }
+
+        .step-content h4 {
+            font-size: 0.95rem;
+            margin-bottom: 5px;
+        }
+
+        .step-content p {
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+
+        /* Mandate graphics for AP2 */
+        .mandate-graphic {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mandate-graphic.intent {
+            background: linear-gradient(135deg, #4285f4, #2563eb);
+            box-shadow: 0 4px 15px rgba(66, 133, 244, 0.3);
+        }
+
+        .mandate-graphic.cart {
+            background: linear-gradient(135deg, #10b981, #059669);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .mandate-graphic.payment {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+        }
+
+        .mandate-graphic svg {
+            width: 32px;
+            height: 32px;
+        }
+
+        .scenario-step-with-graphic {
+            display: flex;
+            gap: 15px;
+            padding: 15px;
+            margin-bottom: 12px;
+            background: var(--dark);
+            border-radius: 12px;
+            border: 1px solid rgba(99, 91, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .scenario-step-with-graphic:hover {
+            border-color: rgba(66, 133, 244, 0.3);
+            transform: translateX(5px);
+        }
+
+        .scenario-step-with-graphic:last-child {
+            margin-bottom: 0;
+        }
+
+        @media (max-width: 600px) {
+            .header h1 { font-size: 1.6rem; }
+            .game-screen { padding: 20px; }
+            .three-parties { flex-direction: column; }
+            .party-card { width: 100%; }
+            .flow-container { flex-direction: column; }
+            .flow-arrow { transform: rotate(90deg); }
+            .token-visual { flex-direction: column; }
+            .transform-arrow { transform: rotate(90deg); }
+            .track-selection { flex-direction: column; align-items: center; }
+            .track-card { width: 100%; max-width: 320px; }
+        }
+
+        .credits {
+            text-align: center;
+            padding: 20px;
+            color: var(--gray);
+            font-size: 0.85rem;
+        }
+
+        .credits a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .credits a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+    <div class="particles" id="particles"></div>
+    <div class="confetti-container" id="confettiContainer"></div>
+
+    <div class="game-container">
+        <header class="header">
+            <h1>🤖 Agentic Commerce Protocol Academy</h1>
+            <p class="subtitle">Learn the technical basics of ACP & AP2 in 5 minutes</p>
+        </header>
+
+        <div class="progress-container" id="progressContainer" style="display: none;">
+            <div class="progress-header">
+                <span id="levelName">Mission 1</span>
+                <div class="score">
+                    <span>⭐</span>
+                    <span id="scoreDisplay">0</span>
+                </div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+            </div>
+            <div class="level-dots" id="levelDots"></div>
+        </div>
+
+        <!-- Welcome Screen -->
+        <div class="game-screen active" id="welcomeScreen">
+            <div class="welcome-content">
+                <div class="welcome-logo">
+                    <img src="agent-logo.png" alt="Logo">
+                </div>
+                <p>Two major AI commerce protocols are emerging with the promise to enable secure, agent-initiated payments. Complete both levels to learn their fundamentals:</p>
+
+                <div class="track-selection">
+                    <div class="track-card acp" style="cursor: default;">
+                        <div style="font-size: 0.75rem; color: var(--secondary); margin-bottom: 8px; font-weight: 600;">LEVEL 1</div>
+                        <h3>ACP</h3>
+                        <div class="track-subtitle">Stripe & OpenAI</div>
+                        <div class="track-desc">Learn about Shared Payment Tokens, merchant-of-record architecture, and SPT guardrails.</div>
+                        <div class="track-meta">6 missions</div>
+                    </div>
+                    <div class="track-card ap2" onclick="startLevel2()">
+                        <div style="font-size: 0.75rem; color: var(--google-blue); margin-bottom: 8px; font-weight: 600;">LEVEL 2</div>
+                        <h3>AP2</h3>
+                        <div class="track-subtitle">Google</div>
+                        <div class="track-desc">Learn about the three mandates, Verifiable Digital Credentials, and cryptographic audit trails.</div>
+                        <div class="track-meta">5 missions</div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 30px;">
+                    <button class="btn btn-primary" onclick="startGame()" style="font-size: 1.2rem; padding: 18px 50px;">
+                        Start your mission →
+                    </button>
+                    <p style="margin-top: 15px; font-size: 0.85rem; color: var(--gray);">~5 minutes • 11 missions total</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ACP TRACK -->
+
+        <!-- ACP Level 1: Three-Party Model -->
+        <div class="game-screen" id="acp1Screen">
+            <div class="level-header">
+                <span class="level-badge">Level 1: ACP • Mission 1 of 6</span>
+                <h2>The Three-Party Model</h2>
+                <p>Understanding the separation of concerns in ACP</p>
+            </div>
+
+            <div class="diagram-container">
+                <div class="three-parties">
+                    <div class="party-card" onclick="selectParty(this)">
+                        <div class="party-icon">👤</div>
+                        <h3>Buyer</h3>
+                        <p>Authorizes payments, owns the customer relationship with the merchant</p>
+                    </div>
+                    <div class="party-card" onclick="selectParty(this)">
+                        <div class="party-icon">🤖</div>
+                        <h3>AI Agent</h3>
+                        <p>Facilitates discovery and checkout orchestration</p>
+                    </div>
+                    <div class="party-card" onclick="selectParty(this)">
+                        <div class="party-icon">🏪</div>
+                        <h3>Business</h3>
+                        <p>Merchant of record, processes payments, fulfills orders</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <p>💡 <strong>Key architecture decision:</strong> The AI Agent never becomes the merchant of record. This preserves existing merchant-customer relationships and ensures chargebacks flow to the actual seller—not the AI platform.</p>
+            </div>
+
+            <div class="quiz-container">
+                <p class="quiz-question">A customer disputes a charge made through an AI agent. Under ACP's model, who handles the chargeback?</p>
+                <div class="quiz-options">
+                    <div class="quiz-option" onclick="checkAnswer(this, false, 'acp1')">
+                        <span class="option-letter">A</span>
+                        <span class="option-text">The AI Agent platform (e.g., OpenAI) since they facilitated the transaction</span>
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(this, false, 'acp1')">
+                        <span class="option-letter">B</span>
+                        <span class="option-text">Stripe, as the payment processor handling the SPT</span>
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(this, true, 'acp1')">
+                        <span class="option-letter">C</span>
+                        <span class="option-text">The Business, as they remain the merchant of record</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-buttons">
+                <button class="btn btn-secondary" onclick="goToWelcome()">← Back</button>
+                <button class="btn btn-primary" id="acp1Next" onclick="goToLevel('acp2')" disabled>Continue →</button>
+            </div>
+        </div>
+
+        <!-- ACP Level 2: Shared Payment Tokens -->
+        <div class="game-screen" id="acp2Screen">
+            <div class="level-header">
+                <span class="level-badge">Level 1: ACP • Mission 2 of 6</span>
+                <h2>Shared Payment Tokens</h2>
+                <p>The payment primitive enabling secure agent-initiated transactions</p>
+            </div>
+
+            <div class="token-demo">
+                <p style="text-align: center; margin-bottom: 20px; color: var(--gray);">Tokenization flow: PAN to SPT</p>
+                <div class="token-visual">
+                    <div class="card-display">
+                        <div class="card-number">4242 •••• •••• 4242</div>
+                        <div class="card-label">PaymentMethod (stored with Stripe)</div>
+                    </div>
+                    <div class="transform-arrow">→</div>
+                    <div class="token-display">
+                        <div class="token-icon">🔐</div>
+                        <div class="token-text">spt_1RgaZcFPC5QUO...</div>
+                        <div class="card-label" style="color: rgba(255,255,255,0.7)">Shared Payment Token</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <p>💡 <strong>Why not just use existing tokens?</strong> SPTs are specifically designed for delegation. Unlike a standard PaymentMethod token, an SPT can be granted to a third party (the business) by the agent, with explicit usage constraints. The agent never accesses the underlying PAN.</p>
+            </div>
+
+            <div class="quiz-container">
+                <p class="quiz-question">How does an SPT differ from a standard Stripe PaymentMethod token in this architecture?</p>
+                <div class="quiz-options">
+                    <div class="quiz-option" onclick="checkAnswer(this, false, 'acp2')">
+                        <span class="option-letter">A</span>
+                        <span class="option-text">SPTs store the full PAN encrypted, while PaymentMethod tokens don't</span>
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(this, true, 'acp2')">
+                        <span class="option-letter">B</span>
+                        <span class="option-text">SPTs are designed for delegation to third parties with explicit usage constraints</span>
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(this, false, 'acp2')">
+                        <span class="option-letter">C</span>
+                        <span class="option-text">SPTs bypass PCI-DSS requirements that PaymentMethod tokens must follow</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-buttons">
+                <button class="btn btn-secondary" onclick="goToLevel('acp1')">← Back</button>
+                <button class="btn btn-primary" id="acp2Next" onclick="goToLevel('acp3')" disabled>Continue →</button>
+            </div>
+        </div>
+
+        <!-- ACP Level 3: SPT Guardrails -->
+        <div class="game-screen" id="acp3Screen">
+            <div class="level-header">
+                <span class="level-badge">Level 1: ACP • Mission 3 of 6</span>
+                <h2>SPT Guardrails & Constraints</h2>
+                <p>Programmable security boundaries built into every token</p>
+            </div>
+
+            <div class="spt-spec">
+                <p style="margin-bottom: 15px; color: var(--gray);">Example SPT response object:</p>
+                <div class="spt-json">
+                    <pre>{
+  <span class="json-key">"id"</span>: <span class="json-string">"spt_1RgaZcFPC5QUO6ZCDVZuVA8q"</span>,
+  <span class="json-key">"object"</span>: <span class="json-string">"shared_payment.granted_token"</span>,
+  <span class="json-key">"usage_limits"</span>: {
+    <span class="json-key">"currency"</span>: <span class="json-string">"usd"</span>,
+    <span class="json-key">"max_amount"</span>: <span class="json-number">5099</span>,  <span class="json-comment">// $50.99 in cents</span>
+    <span class="json-key">"expires_at"</span>: <span class="json-number">1751587220</span>  <span class="json-comment">// Unix timestamp</span>
+  },
+  <span class="json-key">"deactivated_at"</span>: <span class="json-string">null</span>
+}</pre>
+                </div>
+
+                <div class="guardrail-cards">
+                    <div class="guardrail-card" onclick="highlightCard(this)">
+                        <h4>💰 max_amount</h4>
+                        <p>Hard cap on transaction value. Prevents overcharging.</p>
+                    </div>
+                    <div class="guardrail-card" onclick="highlightCard(this)">
+                        <h4>⏱️ expires_at</h4>
+                        <p>Unix timestamp expiry. No stale authorizations.</p>
+                    </div>
+                    <div class="guardrail-card" onclick="highlightCard(this)">
+                        <h4>💱 currency</h4>
+                        <p>Locked to specific currency.</p>
+                    </div>
+                    <div class="guardrail-card" onclick="highlightCard(this)">
+                        <h4>🚫 Revocation</h4>
+                        <p>Agent can deactivate token anytime via API.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="quiz-container">
+                <p class="quiz-question">An SPT is issued with max_amount: 5099 and expires_at set to 24 hours from now. The merchant attempts to charge $75.00 fifteen minutes later. What happens?</p>
+                <div class="quiz-options">
+                    <div class="quiz-option" onclick="checkAnswer(this, true, 'acp3')">
+                        <span class="option-letter">A</span>
+                        <span class="option-text">The charge fails—it exceeds max_amount regardless of expiry status</span>
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(this, false, 'acp3')">
+                        <span class="option-letter">B</span>
+                        <span class="option-text">The charge succeeds since the token hasn't expired yet</span>
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(this, false, 'acp3')">
+                        <span class="option-letter">C</span>
+                        <span class="option-text">The charge is partially approved for the max_amount value</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-buttons">
+                <button class="btn btn-secondary" onclick="goToLevel('acp2')">← Back</button>
+                <button class="btn btn-primary" id="acp3Next" onclick="goToLevel('acp4')" disabled>Continue →</button>
+            </div>
+        </div>
+
+        <!-- ACP Level 4: Transaction Flow -->
+        <div class="game-screen" id="acp4Screen">
+            <div class="level-header">
+                <span class="level-badge">Level 1: ACP • Mission 4 of 6</span>
+                <h2>The Transaction Flow</h2>
+                <p>Click each step to trace the request lifecycle</p>
+            </div>
+
+            <div class="diagram-container">
+                <div class="flow-container">
+                    <div class="flow-step" onclick="activateFlowStep(0, 'acp')">
+                        <div class="flow-icon" id="acpFlow0">👤</div>
+                        <span class="flow-label">User intent</span>
+                    </div>
+                    <span class="flow-arrow" id="acpArrow0">→</span>
+                    <div class="flow-step" onclick="activateFlowStep(1, 'acp')">
+                        <div class="flow-icon" id="acpFlow1">🤖</div>
+                        <span class="flow-label">Agent queries ACP</span>
+                    </div>
+                    <span class="flow-arrow" id="acpArrow1">→</span>
+                    <div class="flow-step" onclick="activateFlowStep(2, 'acp')">
+                        <div class="flow-icon" id="acpFlow2">🔐</div>
+                        <span class="flow-label">SPT issued</span>
+                    </div>
+                    <span class="flow-arrow" id="acpArrow2">→</span>
+                    <div class="flow-step" onclick="activateFlowStep(3, 'acp')">
+                        <div class="flow-icon" id="acpFlow3">🏪</div>
+                        <span class="flow-label">Merchant charges</span>
+                    </div>
+                    <span class="flow-arrow" id="acpArrow3">→</span>
+                    <div class="flow-step" onclick="activateFlowStep(4, 'acp')">
+                        <div class="flow-icon" id="acpFlow4">✅</div>
+                        <span class="flow-label">Confirmation</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box" id="acpFlowInfo">
+                <p>👆 Click each step to understand the data flow at each stage.</p>
+            </div>
+
+            <div class="quiz-container">
+                <p class="quiz-question">At which point in the ACP flow does the AI agent have visibility into the buyer's actual payment credentials?</p>
+                <div class="quiz-options">
+                    <div class="quiz-option" onclick="checkAnswer(this, false, 'acp4')">
+                        <span class="option-letter">A</span>
+                        <span class="option-text">When the SPT is issued—the agent decrypts it to verify authorization</span>
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(this, false, 'acp4')">
+                        <span class="option-letter">B</span>
+                        <span class="option-text">During checkout confirmation—the agent validates the card</span>
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(this, true, 'acp4')">
+                        <span class="option-letter">C</span>
+                        <span class="option-text">Never—the agent only handles opaque token references</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-buttons">
+                <button class="btn btn-secondary" onclick="goToLevel('acp3')">← Back</button>
+                <button class="btn btn-primary" id="acp4Next" onclick="goToLevel('acp5')" disabled>Continue →</button>
+            </div>
+        </div>
+
+        <!-- ACP Level 5: Simulation -->
+        <div class="game-screen" id="acp5Screen">
+            <div class="level-header">
+                <span class="level-badge">Level 1: ACP • Mission 5 of 6</span>
+                <h2>Agent Simulation</h2>
+                <p>You're the AI agent. Make the right architectural decisions.</p>
+            </div>
+
+            <div class="simulation">
+                <div class="sim-header">
+                    <div class="sim-title">
+                        <span>💬</span>
+                        <strong>ChatGPT + Instant Checkout</strong>
+                    </div>
+                    <span class="sim-status" id="acpSimStatus">In Progress</span>
+                </div>
+
+                <div class="chat-container" id="acpChatContainer">
+                    <div class="chat-message">
+                        <div class="chat-avatar user">👤</div>
+                        <div class="chat-bubble">I want to buy that vintage ceramic vase from Etsy for $45. Can you handle the purchase?</div>
+                    </div>
+                </div>
+
+                <div class="action-buttons" id="acpActionButtons">
+                    <button class="action-btn" onclick="acpSimAction('query')">Query Etsy's ACP checkout endpoint</button>
+                    <button class="action-btn" onclick="acpSimAction('wrong1')">Request user's saved PaymentMethod ID</button>
+                    <button class="action-btn" onclick="acpSimAction('wrong2')">Create PaymentIntent on user's behalf</button>
+                </div>
+            </div>
+
+            <div class="nav-buttons">
+                <button class="btn btn-secondary" onclick="goToLevel('acp4')">← Back</button>
+                <button class="btn btn-primary" id="acp5Next" onclick="goToLevel('acp6')" disabled>Continue →</button>
+            </div>
+        </div>
+
+        <!-- ACP Level 6: Final Quiz -->
+        <div class="game-screen" id="acp6Screen">
+            <div class="level-header">
+                <span class="level-badge">Level 1: ACP • Mission 6 of 6</span>
+                <h2>ACP Knowledge Check</h2>
+                <p>Test your understanding of ACP architecture</p>
+            </div>
+
+            <div class="quiz-container" id="acpFinalQuiz"></div>
+
+            <div class="nav-buttons">
+                <button class="btn btn-secondary" onclick="goToLevel('acp5')">← Back</button>
+                <button class="btn btn-success" id="acp6Next" onclick="showLevelTransition()" disabled>Complete Level 1 →</button>
+            </div>
+        </div>
+
+        <!-- Level Transition Screen -->
+        <div class="game-screen" id="levelTransitionScreen">
+            <div class="welcome-content">
+                <div style="font-size: 4rem; margin-bottom: 20px;">🎉</div>
+                <h2 style="background: linear-gradient(135deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Level 1 Complete!</h2>
+                <p style="margin: 20px 0;">You've mastered ACP fundamentals. Now let's explore Google's AP2 protocol—a different approach using cryptographic mandates.</p>
+
+                <div class="key-learnings" style="margin: 30px auto; max-width: 500px;">
+                    <h3>📚 ACP Key Takeaways</h3>
+                    <ul>
+                        <li><span class="check-icon">✓</span><span><strong>Merchant of Record:</strong> Businesses retain this status</span></li>
+                        <li><span class="check-icon">✓</span><span><strong>SPT Constraints:</strong> max_amount, expires_at, currency</span></li>
+                        <li><span class="check-icon">✓</span><span><strong>Zero Credential Exposure:</strong> Agents use opaque tokens</span></li>
+                    </ul>
+                </div>
+
+                <div style="margin-top: 30px;">
+                    <button class="btn btn-google" onclick="startLevel2()" style="font-size: 1.1rem; padding: 16px 40px;">
+                        Start Level 2: AP2 →
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- AP2 TRACK -->
+
+        <!-- AP2 Level 1: The Three Mandates -->
+        <div class="game-screen" id="ap21Screen">
+            <div class="level-header">
+                <span class="level-badge ap2">Level 2: AP2 • Mission 1 of 5</span>
+                <h2>The Three Mandates</h2>
+                <p>AP2's staged authorization model</p>
+            </div>
+
+            <div class="example-scenario">
+                <div class="scenario-header">
+                    <span>📖</span> Example: Sarah asks her AI agent to "buy me running shoes under $150"
+                </div>
+
+                <div class="scenario-step-with-graphic">
+                    <div class="mandate-graphic intent">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M12 6v6l4 2"/>
+                            <path d="M9 12h6" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <div class="step-content">
+                        <h4 style="color: #4285f4;">1. Intent Mandate</h4>
+                        <p>Sarah's request is captured and cryptographically signed: "Purchase running shoes, max $150, from authorized retailers." This delegates authority to the agent within defined constraints.</p>
+                    </div>
+                </div>
+
+                <div class="scenario-step-with-graphic">
+                    <div class="mandate-graphic cart">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                            <circle cx="9" cy="21" r="1"/>
+                            <circle cx="20" cy="21" r="1"/>
+                            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                        </svg>
+                    </div>
+                    <div class="step-content">
+                        <h4 style="color: #10b981;">2. Cart Mandate</h4>
+                        <p>Agent finds Nike Pegasus for $129. Sarah reviews and signs the Cart Mandate: "Nike Pegasus, $129, Foot Locker, size 9." This locks the specific purchase details.</p>
+                    </div>
+                </div>
+
+                <div class="scenario-step-with-graphic">
+                    <div class="mandate-graphic payment">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                            <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                            <line x1="1" y1="10" x2="23" y2="10"/>
+                            <path d="M7 15h4"/>
+                        </svg>
+                    </div>
+                    <div class="step-content">
+                        <h4 style="color: #f59e0b;">3. Payment Mandate</h4>
+                        <p>Sent to payment processor signaling "this is agent-initiated, user approved via Cart Mandate." Enables the payment network to process with full context.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box ap2">
+                <p>💡 <strong>Each mandate is signed:</strong> This creates a cryptographic chain where each step is attributable and verifiable. If something goes wrong, the chain shows exactly where authorization existed (or didn't).</p>
+            </div>
+
+            <div class="quiz-container">
+                <p class="quiz-question">The agent finds shoes for $175 and purchases them without showing Sarah the Cart Mandate. Who bears responsibility?</p>
+                <div class="quiz-options">
+                    <div class="quiz-option" onclick="checkAnswer(this, true, 'ap21')">
+                        <span class="option-letter">A</span>
+                        <span class="option-text">The agent platform—they exceeded the Intent Mandate's $150 constraint without a signed Cart Mandate</span>
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(this, false, 'ap21')">
+                        <span class="option-letter">B</span>
+                        <span class="option-text">Sarah—she delegated authority when she signed the Intent Mandate</span>
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(this, false, 'ap21')">
+                        <span class="option-letter">C</span>
+                        <span class="option-text">The merchant—they should have verified the Cart Mandate</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-buttons">
+                <button class="btn btn-secondary" onclick="goToLevel('levelTransition')">← Back</button>
+                <button class="btn btn-google" id="ap21Next" onclick="goToLevel('ap22')" disabled>Continue →</button>
+            </div>
+        </div>
+
+        <!-- AP2 Level 2: Verifiable Digital Credentials -->
+        <div class="game-screen" id="ap22Screen">
+            <div class="level-header">
+                <span class="level-badge ap2">Level 2: AP2 • Mission 2 of 5</span>
+                <h2>Verifiable Digital Credentials</h2>
+                <p>The cryptographic primitive that makes mandates tamper-proof</p>
+            </div>
+
+            <div class="mandate-spec">
+                <p style="margin-bottom: 15px; color: var(--gray);">Each mandate is a VDC—a tamper-evident, cryptographically signed object:</p>
+                <div class="mandate-json">
+                    <pre>{
+  <span class="json-key">"type"</span>: <span class="json-string">"CartMandate"</span>,
+  <span class="json-key">"items"</span>: [{
+    <span class="json-key">"name"</span>: <span class="json-string">"Nike Pegasus"</span>,
+    <span class="json-key">"price"</span>: <span class="json-number">12900</span>,
+    <span class="json-key">"merchant"</span>: <span class="json-string">"foot_locker_123"</span>
+  }],
+  <span class="json-key">"user_signature"</span>: <span class="json-string">"eyJhbGciOiJS..."</span>,
+  <span class="json-key">"signed_at"</span>: <span class="json-number">1751587220</span>
+}</pre>
+                </div>
+            </div>
+
+            <div class="info-box ap2">
+                <p>💡 <strong>Tamper-evident:</strong> Signatures are tied to the exact content. When Sarah signed her Cart Mandate for the Nike Pegasus at $129, that signature is cryptographically bound to those exact values. If anyone modifies "$129" to "$229", verification fails.</p>
+            </div>
+
+            <div class="quiz-container">
+                <p class="quiz-question">A merchant receives a Cart Mandate but modifies the quantity from 1 to 3 before processing. When the user disputes, what happens?</p>
+                <div class="quiz-options">
+                    <div class="quiz-option" onclick="checkAnswer(this, false, 'ap22')">
+                        <span class="option-letter">A</span>
+                        <span class="option-text">The merchant's version is accepted since they processed the payment</span>
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(this, true, 'ap22')">
+                        <span class="option-letter">B</span>
+                        <span class="option-text">The merchant's version won't match the user's signed original—verification fails</span>
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(this, false, 'ap22')">
+                        <span class="option-letter">C</span>
+                        <span class="option-text">Both versions are considered valid since the mandate ID matches</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-buttons">
+                <button class="btn btn-secondary" onclick="goToLevel('ap21')">← Back</button>
+                <button class="btn btn-google" id="ap22Next" onclick="goToLevel('ap23')" disabled>Continue →</button>
+            </div>
+        </div>
+
+        <!-- AP2 Level 3: Human-Not-Present -->
+        <div class="game-screen" id="ap23Screen">
+            <div class="level-header">
+                <span class="level-badge ap2">Level 2: AP2 • Mission 3 of 5</span>
+                <h2>Human-Present vs Human-Not-Present</h2>
+                <p>How the mandate chain handles autonomous agent actions</p>
+            </div>
+
+            <div class="diagram-container">
+                <div class="mandate-cards">
+                    <div class="mandate-card" onclick="highlightCard(this)">
+                        <h4>👤 Human-Present</h4>
+                        <p>Agent finds options → User reviews and signs Cart Mandate → Purchase proceeds. The user explicitly approved the specific transaction.</p>
+                    </div>
+                    <div class="mandate-card" onclick="highlightCard(this)">
+                        <h4>🤖 Human-Not-Present</h4>
+                        <p>Agent finds options within Intent Mandate constraints → Purchases autonomously. User accepted risk for actions within their stated constraints.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box ap2">
+                <p>💡 <strong>The Intent Mandate bridges the gap:</strong> In traditional checkout, the human clicking "buy" IS the authorization. With autonomous agents, the Intent Mandate serves as that authorization—"you may act on my behalf, within these bounds."</p>
+            </div>
+
+            <div class="quiz-container">
+                <p class="quiz-question">An agent autonomously books a $180 hotel when the Intent Mandate specified "under $200." The user disputes, claiming they didn't approve this specific hotel. What's the likely outcome?</p>
+                <div class="quiz-options">
+                    <div class="quiz-option" onclick="checkAnswer(this, false, 'ap23')">
+                        <span class="option-letter">A</span>
+                        <span class="option-text">The agent platform is liable—they should have obtained a Cart Mandate</span>
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(this, true, 'ap23')">
+                        <span class="option-letter">B</span>
+                        <span class="option-text">The user accepted this risk—the agent acted within the signed Intent Mandate constraints</span>
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(this, false, 'ap23')">
+                        <span class="option-letter">C</span>
+                        <span class="option-text">The hotel is liable—they should have verified user presence</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-buttons">
+                <button class="btn btn-secondary" onclick="goToLevel('ap22')">← Back</button>
+                <button class="btn btn-google" id="ap23Next" onclick="goToLevel('ap24')" disabled>Continue →</button>
+            </div>
+        </div>
+
+        <!-- AP2 Level 4: Audit Trail -->
+        <div class="game-screen" id="ap24Screen">
+            <div class="level-header">
+                <span class="level-badge ap2">Level 2: AP2 • Mission 4 of 5</span>
+                <h2>The Cryptographic Audit Trail</h2>
+                <p>How the signed mandate chain resolves disputes</p>
+            </div>
+
+            <div class="diagram-container">
+                <div class="flow-container">
+                    <div class="flow-step" onclick="activateFlowStep(0, 'ap2')">
+                        <div class="flow-icon" id="ap2Flow0">📝</div>
+                        <span class="flow-label">Intent Mandate signed</span>
+                    </div>
+                    <span class="flow-arrow" id="ap2Arrow0">→</span>
+                    <div class="flow-step" onclick="activateFlowStep(1, 'ap2')">
+                        <div class="flow-icon" id="ap2Flow1">🛒</div>
+                        <span class="flow-label">Cart Mandate signed</span>
+                    </div>
+                    <span class="flow-arrow" id="ap2Arrow1">→</span>
+                    <div class="flow-step" onclick="activateFlowStep(2, 'ap2')">
+                        <div class="flow-icon" id="ap2Flow2">💳</div>
+                        <span class="flow-label">Payment processed</span>
+                    </div>
+                    <span class="flow-arrow" id="ap2Arrow2">→</span>
+                    <div class="flow-step" onclick="activateFlowStep(3, 'ap2')">
+                        <div class="flow-icon" id="ap2Flow3">🔍</div>
+                        <span class="flow-label">Audit if disputed</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box ap2" id="ap2FlowInfo">
+                <p>👆 Click each step to see how the audit trail works at each stage.</p>
+            </div>
+
+            <div class="quiz-container">
+                <p class="quiz-question">A merchant claims the user approved $500, but the user's Cart Mandate shows $300. The merchant cannot produce a signed mandate showing $500. What's the resolution?</p>
+                <div class="quiz-options">
+                    <div class="quiz-option" onclick="checkAnswer(this, false, 'ap24')">
+                        <span class="option-letter">A</span>
+                        <span class="option-text">Split the difference—neither party has definitive proof</span>
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(this, true, 'ap24')">
+                        <span class="option-letter">B</span>
+                        <span class="option-text">The merchant bears responsibility—they can't produce cryptographic proof of $500 authorization</span>
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(this, false, 'ap24')">
+                        <span class="option-letter">C</span>
+                        <span class="option-text">The payment processor decides based on transaction history</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-buttons">
+                <button class="btn btn-secondary" onclick="goToLevel('ap23')">← Back</button>
+                <button class="btn btn-google" id="ap24Next" onclick="goToLevel('ap25')" disabled>Continue →</button>
+            </div>
+        </div>
+
+        <!-- AP2 Level 5: Roles -->
+        <div class="game-screen" id="ap25Screen">
+            <div class="level-header">
+                <span class="level-badge ap2">Level 2: AP2 • Mission 5 of 5</span>
+                <h2>The Four Key Roles</h2>
+                <p>Understanding who does what in the AP2 ecosystem</p>
+            </div>
+
+            <div class="diagram-container">
+                <div class="three-parties" style="flex-wrap: wrap;">
+                    <div class="party-card" onclick="selectParty(this)" style="border-color: rgba(66, 133, 244, 0.3);">
+                        <div class="party-icon">🛒</div>
+                        <h3>Shopper</h3>
+                        <p>The end user who initiates purchases through their AI agent and signs mandates to authorize transactions</p>
+                    </div>
+                    <div class="party-card" onclick="selectParty(this)" style="border-color: rgba(66, 133, 244, 0.3);">
+                        <div class="party-icon">🏪</div>
+                        <h3>Merchant</h3>
+                        <p>Sells goods/services, receives mandates from agents, and submits payment requests to processors</p>
+                    </div>
+                    <div class="party-card" onclick="selectParty(this)" style="border-color: rgba(66, 133, 244, 0.3);">
+                        <div class="party-icon">🔐</div>
+                        <h3>Credentials Provider</h3>
+                        <p>Issues and manages Verifiable Digital Credentials (VDCs) that prove identity and authorization</p>
+                    </div>
+                    <div class="party-card" onclick="selectParty(this)" style="border-color: rgba(66, 133, 244, 0.3);">
+                        <div class="party-icon">💳</div>
+                        <h3>Payment Processor</h3>
+                        <p>Validates the mandate chain, processes payments, and maintains the cryptographic audit trail</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box ap2">
+                <p>💡 <strong>Separation of concerns:</strong> Unlike traditional payments where the card network handles everything, AP2 explicitly separates credential issuance from payment processing. This allows specialized providers for each function.</p>
+            </div>
+
+            <div class="quiz-container">
+                <p class="quiz-question">A shopper's AI agent presents a Cart Mandate to a merchant. Before processing, who validates that the mandate's VDC is authentic?</p>
+                <div class="quiz-options">
+                    <div class="quiz-option" onclick="checkAnswer(this, false, 'ap25')">
+                        <span class="option-letter">A</span>
+                        <span class="option-text">The merchant verifies directly using the shopper's public key</span>
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(this, true, 'ap25')">
+                        <span class="option-letter">B</span>
+                        <span class="option-text">The payment processor validates the VDC against the credentials provider</span>
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(this, false, 'ap25')">
+                        <span class="option-letter">C</span>
+                        <span class="option-text">The AI agent self-certifies the mandate's authenticity</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-buttons">
+                <button class="btn btn-secondary" onclick="goToLevel('ap24')">← Back</button>
+                <button class="btn btn-success" id="ap25Next" onclick="showFinalResults()" disabled>Complete Training 🎓</button>
+            </div>
+        </div>
+
+        <!-- Results Screen -->
+        <div class="game-screen" id="resultsScreen">
+            <div class="results-content">
+                <div class="results-icon">🎓</div>
+                <h2 id="resultsTitle">Training Complete!</h2>
+                <p style="color: var(--gray);" id="resultsSubtitle">You've completed the training</p>
+
+                <div class="final-score">
+                    <span id="finalScore">0</span>/<span id="maxScore">100</span>
+                </div>
+
+                <div class="score-breakdown">
+                    <div class="score-item">
+                        <div class="number" id="correctAnswers">0</div>
+                        <div class="label">Correct Answers</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="number" id="levelsCompleted">0</div>
+                        <div class="label">Missions Completed</div>
+                    </div>
+                </div>
+
+                <div class="key-learnings" id="keyLearnings"></div>
+
+                <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                    <button class="btn btn-primary" onclick="goToWelcome()">Play Again 🔄</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="credits">
+            Built by <a href="https://jorisvanmens.com" target="_blank">Joris van Mens</a> and Claude Code
+        </div>
+    </div>
+
+    <script>
+        // Game state
+        let currentTrack = null;
+        let currentLevel = '';
+        let score = 0;
+        let answeredQuestions = new Set();
+        let flowStepsClicked = { acp: new Set(), ap2: new Set() };
+        let acpFinalAnswered = 0;
+
+        const trackConfig = {
+            acp: {
+                levels: ['acp1', 'acp2', 'acp3', 'acp4', 'acp5', 'acp6'],
+                name: 'Level 1: ACP',
+                levelNum: 1,
+                maxScore: 115,
+                color: 'var(--primary)'
+            },
+            ap2: {
+                levels: ['ap21', 'ap22', 'ap23', 'ap24', 'ap25'],
+                name: 'Level 2: AP2',
+                levelNum: 2,
+                maxScore: 75,
+                color: 'var(--google-blue)'
+            }
+        };
+
+        const totalMaxScore = 190; // Combined max score for both levels
+
+        // Initialize particles
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 15 + 's';
+                particle.style.animationDuration = (15 + Math.random() * 10) + 's';
+                if (Math.random() > 0.5) particle.style.background = 'var(--secondary)';
+                container.appendChild(particle);
+            }
+        }
+        createParticles();
+
+        // Confetti effect - green shades with color shifting
+        function showConfetti() {
+            const container = document.getElementById('confettiContainer');
+            // Various shades of green for the confetti
+            const greenShades = [
+                '#00d4aa', // teal-green
+                '#00ff88', // bright green
+                '#22c55e', // emerald
+                '#10b981', // green-500
+                '#059669', // green-600
+                '#047857', // green-700
+                '#34d399', // light emerald
+                '#6ee7b7', // pale green
+                '#a7f3d0', // very light green
+                '#14b8a6'  // teal
+            ];
+
+            for (let i = 0; i < 40; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.background = greenShades[Math.floor(Math.random() * greenShades.length)];
+                confetti.style.animationDelay = Math.random() * 0.5 + 's';
+                confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                // Add slight size variation for visual interest
+                const size = 8 + Math.random() * 8;
+                confetti.style.width = size + 'px';
+                confetti.style.height = size + 'px';
+                // Random animation duration for color shift
+                confetti.style.setProperty('--shift-duration', (1 + Math.random()) + 's');
+                container.appendChild(confetti);
+
+                setTimeout(() => confetti.remove(), 3000);
+            }
+        }
+
+        // Start the unified game (Level 1: ACP first)
+        function startGame() {
+            currentTrack = 'acp';
+            score = 0;
+            answeredQuestions.clear();
+            flowStepsClicked = { acp: new Set(), ap2: new Set() };
+            acpFinalAnswered = 0;
+
+            document.getElementById('welcomeScreen').classList.remove('active');
+            document.getElementById('progressContainer').style.display = 'block';
+
+            setupProgressDots();
+            goToLevel('acp1');
+        }
+
+        // Legacy function for backwards compatibility
+        function startTrack(track) {
+            if (track === 'acp') {
+                startGame();
+            } else {
+                startLevel2();
+            }
+        }
+
+        // Show transition screen between Level 1 and Level 2
+        function showLevelTransition() {
+            document.querySelectorAll('.game-screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('levelTransitionScreen').classList.add('active');
+            showConfetti(); // Celebrate Level 1 completion
+        }
+
+        // Start Level 2 (AP2)
+        function startLevel2() {
+            currentTrack = 'ap2';
+            // Don't reset score - keep it cumulative
+
+            document.querySelectorAll('.game-screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('progressContainer').style.display = 'block';
+
+            setupProgressDots();
+            goToLevel('ap21');
+        }
+
+        // Show final results after completing both levels
+        function showFinalResults() {
+            document.querySelectorAll('.game-screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('resultsScreen').classList.add('active');
+
+            document.getElementById('resultsTitle').textContent = 'Training Complete!';
+            document.getElementById('resultsSubtitle').textContent = "You've mastered both ACP and AP2 protocols";
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('maxScore').textContent = totalMaxScore;
+            document.getElementById('correctAnswers').textContent = Math.floor(score / 10);
+            document.getElementById('levelsCompleted').textContent = '11';
+
+            const learnings = document.getElementById('keyLearnings');
+            learnings.innerHTML = `
+                <h3>📚 Key Takeaways</h3>
+                <ul>
+                    <li><span class="check-icon">✓</span><span><strong>ACP (Stripe/OpenAI):</strong> SPTs with max_amount, expires_at constraints; merchant remains merchant-of-record</span></li>
+                    <li><span class="check-icon">✓</span><span><strong>AP2 (Google):</strong> Three-mandate chain (Intent → Cart → Payment) with cryptographic signatures</span></li>
+                    <li><span class="check-icon">✓</span><span><strong>Zero Credential Exposure:</strong> Both protocols keep PANs away from AI agents</span></li>
+                    <li><span class="check-icon">✓</span><span><strong>Audit & Liability:</strong> Clear attribution chains for dispute resolution</span></li>
+                </ul>
+            `;
+
+            document.getElementById('specLink').onclick = () => window.open('https://www.agenticcommerce.dev/', '_blank');
+
+            document.querySelectorAll('.level-dot').forEach(dot => {
+                dot.classList.add('completed');
+                dot.classList.remove('current');
+            });
+            document.getElementById('progressFill').style.width = '100%';
+
+            showConfetti(); // Final celebration
+        }
+
+        function setupProgressDots() {
+            const dotsContainer = document.getElementById('levelDots');
+            const levels = trackConfig[currentTrack].levels;
+            dotsContainer.innerHTML = '';
+
+            levels.forEach((level, index) => {
+                const dot = document.createElement('div');
+                dot.className = 'level-dot' + (currentTrack === 'ap2' ? ' ap2-dot' : '');
+                dot.dataset.level = level;
+                dot.textContent = index === levels.length - 1 ? '🎓' : (index + 1);
+                dotsContainer.appendChild(dot);
+            });
+        }
+
+        function goToWelcome() {
+            document.querySelectorAll('.game-screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('welcomeScreen').classList.add('active');
+            document.getElementById('progressContainer').style.display = 'none';
+            currentTrack = null;
+            currentLevel = '';
+            score = 0;
+            answeredQuestions.clear();
+            document.getElementById('scoreDisplay').textContent = '0';
+
+            // Reset all UI
+            resetAllUI();
+        }
+
+        function resetAllUI() {
+            document.querySelectorAll('.quiz-option').forEach(opt => {
+                opt.classList.remove('correct', 'incorrect', 'disabled');
+            });
+            document.querySelectorAll('.flow-icon, .flow-arrow').forEach(el => {
+                el.classList.remove('active');
+            });
+            document.querySelectorAll('.guardrail-card, .mandate-card').forEach(c => {
+                c.classList.remove('highlighted');
+            });
+
+            // Reset ACP simulation
+            const acpChat = document.getElementById('acpChatContainer');
+            if (acpChat) {
+                acpChat.innerHTML = `<div class="chat-message"><div class="chat-avatar user">👤</div><div class="chat-bubble">I want to buy that vintage ceramic vase from Etsy for $45. Can you handle the purchase?</div></div>`;
+            }
+            const acpButtons = document.getElementById('acpActionButtons');
+            if (acpButtons) {
+                acpButtons.innerHTML = `
+                    <button class="action-btn" onclick="acpSimAction('query')">Query Etsy's ACP checkout endpoint</button>
+                    <button class="action-btn" onclick="acpSimAction('wrong1')">Request user's saved PaymentMethod ID</button>
+                    <button class="action-btn" onclick="acpSimAction('wrong2')">Create PaymentIntent on user's behalf</button>
+                `;
+            }
+            const acpStatus = document.getElementById('acpSimStatus');
+            if (acpStatus) {
+                acpStatus.textContent = 'In Progress';
+                acpStatus.classList.remove('success');
+            }
+
+            // Reset flow info boxes
+            document.getElementById('acpFlowInfo').innerHTML = '<p>👆 Click each step to understand the data flow at each stage.</p>';
+            document.getElementById('ap2FlowInfo').innerHTML = '<p>👆 Click each step to see how the audit trail works at each stage.</p>';
+
+            // Reset next buttons
+            document.querySelectorAll('[id$="Next"]').forEach(btn => btn.disabled = true);
+        }
+
+        function goToLevel(levelId) {
+            document.querySelectorAll('.game-screen').forEach(s => s.classList.remove('active'));
+
+            // Handle special screens
+            if (levelId === 'levelTransition') {
+                document.getElementById('levelTransitionScreen').classList.add('active');
+                return;
+            }
+
+            document.getElementById(levelId + 'Screen').classList.add('active');
+            currentLevel = levelId;
+            updateProgress();
+
+            if (levelId === 'acp6') initAcpFinalQuiz();
+        }
+
+        function updateProgress() {
+            if (!currentTrack) return;
+
+            const levels = trackConfig[currentTrack].levels;
+            const currentIndex = levels.indexOf(currentLevel);
+            const progress = ((currentIndex + 1) / levels.length) * 100;
+
+            const progressFill = document.getElementById('progressFill');
+            progressFill.style.width = progress + '%';
+            progressFill.className = 'progress-fill' + (currentTrack === 'ap2' ? ' ap2' : '');
+
+            document.getElementById('scoreDisplay').textContent = score;
+            document.getElementById('levelName').innerHTML = `${trackConfig[currentTrack].name} • Mission ${currentIndex + 1} of ${levels.length}`;
+
+            document.querySelectorAll('.level-dot').forEach((dot, index) => {
+                dot.classList.remove('completed', 'current');
+                if (index < currentIndex) dot.classList.add('completed');
+                else if (index === currentIndex) dot.classList.add('current');
+            });
+        }
+
+        function selectParty(card) {
+            card.classList.add('selected');
+            setTimeout(() => card.classList.remove('selected'), 500);
+        }
+
+        function highlightCard(card) {
+            card.parentElement.querySelectorAll('.guardrail-card, .mandate-card').forEach(c => c.classList.remove('highlighted'));
+            card.classList.add('highlighted');
+        }
+
+        function checkAnswer(element, isCorrect, levelId) {
+            if (answeredQuestions.has(levelId)) return;
+            answeredQuestions.add(levelId);
+
+            element.parentElement.querySelectorAll('.quiz-option').forEach(opt => opt.classList.add('disabled'));
+
+            if (isCorrect) {
+                element.classList.add('correct');
+                score += 15;
+                document.getElementById('scoreDisplay').textContent = score;
+                showConfetti();
+            } else {
+                element.classList.add('incorrect');
+                element.parentElement.querySelectorAll('.quiz-option').forEach(opt => {
+                    if (opt.onclick && opt.onclick.toString().includes('true')) opt.classList.add('correct');
+                });
+            }
+
+            const nextBtn = document.getElementById(levelId + 'Next');
+            if (nextBtn) nextBtn.disabled = false;
+        }
+
+        // ACP Flow descriptions
+        const acpFlowDescriptions = [
+            '👤 <strong>User Intent:</strong> The buyer expresses purchase intent. No payment info exchanged yet.',
+            '🤖 <strong>ACP Query:</strong> Agent calls the merchant\'s ACP-enabled checkout endpoint to get product details and pricing.',
+            '🔐 <strong>SPT Issuance:</strong> Upon buyer confirmation, an SPT is generated with constraints (max_amount, expiry, currency).',
+            '🏪 <strong>Merchant Charge:</strong> The SPT is granted to the merchant, who creates a PaymentIntent. Constraints are validated.',
+            '✅ <strong>Confirmation:</strong> Webhook notifies all parties. Merchant fulfills order. Direct customer relationship established.'
+        ];
+
+        // AP2 Flow descriptions
+        const ap2FlowDescriptions = [
+            '📝 <strong>Intent Mandate:</strong> User\'s original request and constraints are captured and signed.',
+            '🛒 <strong>Cart Mandate:</strong> Specific items and prices are locked with user\'s signature.',
+            '💳 <strong>Payment Processed:</strong> Payment Mandate sent to processor with full context.',
+            '🔍 <strong>Audit Trail:</strong> If disputed, the signed mandate chain shows exactly what was authorized at each step.'
+        ];
+
+        function activateFlowStep(step, track) {
+            const prefix = track === 'acp' ? 'acp' : 'ap2';
+            document.getElementById(`${prefix}Flow${step}`).classList.add('active');
+            if (step > 0) document.getElementById(`${prefix}Arrow${step - 1}`).classList.add('active');
+
+            const descriptions = track === 'acp' ? acpFlowDescriptions : ap2FlowDescriptions;
+            document.getElementById(`${prefix}FlowInfo`).innerHTML = `<p>${descriptions[step]}</p>`;
+
+            flowStepsClicked[track].add(step);
+            if (flowStepsClicked[track].size >= 3) {
+                const levelId = track === 'acp' ? 'acp4' : 'ap24';
+                const nextBtn = document.getElementById(levelId + 'Next');
+                if (nextBtn && !answeredQuestions.has(levelId)) {
+                    // Don't enable yet - wait for quiz
+                }
+            }
+        }
+
+        // ACP Simulation
+        const acpSimScript = [
+            { role: 'agent', text: '🔍 Querying Etsy\'s ACP checkout endpoint for product details...' },
+            { role: 'system', text: '✓ ACP Response: Vintage Ceramic Vase - $45.00 + $5.99 shipping. Merchant: etsy_seller_12345' },
+            { role: 'agent', text: 'Found it! Total: $50.99 including shipping. I\'ll request an SPT scoped to this merchant and amount. Confirm to proceed?' },
+            { role: 'user', text: 'Yes, go ahead!' },
+            { role: 'agent', text: '🔐 Requesting SPT with max_amount: 5099, currency: usd, expires_at: +1 hour...' },
+            { role: 'system', text: '✓ SPT granted: spt_1RgaZc... Constraints validated. Granting to merchant.' },
+            { role: 'agent', text: '🎉 Order confirmed! Etsy will email your receipt. The merchant (not me) processed the payment.' }
+        ];
+
+        function acpSimAction(action) {
+            const chat = document.getElementById('acpChatContainer');
+            const buttons = document.getElementById('acpActionButtons');
+
+            if (action === 'query') {
+                buttons.querySelectorAll('.action-btn').forEach(btn => btn.disabled = true);
+                buttons.querySelector('.action-btn:first-child').classList.add('correct');
+                showConfetti();
+
+                let delay = 500;
+                acpSimScript.forEach((msg, index) => {
+                    setTimeout(() => {
+                        addChatMessage('acpChatContainer', msg.role, msg.text);
+                        if (index === acpSimScript.length - 1) {
+                            document.getElementById('acpSimStatus').textContent = 'Complete!';
+                            document.getElementById('acpSimStatus').classList.add('success');
+                            score += 15;
+                            document.getElementById('scoreDisplay').textContent = score;
+                            document.getElementById('acp5Next').disabled = false;
+                        }
+                    }, delay);
+                    delay += 1000;
+                });
+            } else {
+                const clickedBtn = event.target;
+                clickedBtn.classList.add('wrong');
+                const errorMsg = action === 'wrong1'
+                    ? '❌ Agents should never request PaymentMethod IDs directly. SPTs avoid credential exposure to the agent layer.'
+                    : '❌ Creating a PaymentIntent would make the agent the payment processor. ACP keeps the merchant as merchant of record.';
+                addChatMessage('acpChatContainer', 'system', errorMsg);
+                setTimeout(() => clickedBtn.classList.remove('wrong'), 1000);
+            }
+        }
+
+        function addChatMessage(containerId, role, text) {
+            const chat = document.getElementById(containerId);
+            const avatars = { user: '👤', agent: '🤖', system: '⚙️' };
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'chat-message';
+            msgDiv.innerHTML = `<div class="chat-avatar ${role}">${avatars[role]}</div><div class="chat-bubble ${role === 'system' ? 'highlight' : ''}">${text}</div>`;
+            chat.appendChild(msgDiv);
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        // ACP Final Quiz
+        const acpFinalQuestions = [
+            {
+                q: 'In Mission 1, we learned about merchant of record status. If a buyer\'s bank initiates a fraud investigation, which party\'s account shows the dispute?',
+                options: ['The AI agent platform\'s account', 'The business\'s account, as merchant of record', 'Neither—SPTs use a shared liability pool'],
+                correct: 1
+            },
+            {
+                q: 'Based on Mission 3: an SPT is issued with max_amount: 10000 ($100). Can the merchant split this into two $50 charges?',
+                options: ['Yes, as long as total doesn\'t exceed max_amount', 'No, SPTs are single-use—one charge attempt only', 'Yes, but only if both happen before expires_at'],
+                correct: 1
+            }
+        ];
+
+        function initAcpFinalQuiz() {
+            const container = document.getElementById('acpFinalQuiz');
+            container.innerHTML = '';
+            acpFinalAnswered = 0;
+
+            acpFinalQuestions.forEach((q, qIndex) => {
+                const qDiv = document.createElement('div');
+                qDiv.style.marginBottom = '30px';
+                qDiv.innerHTML = `
+                    <p class="quiz-question">${qIndex + 1}. ${q.q}</p>
+                    <div class="quiz-options" id="acpFinalQ${qIndex}">
+                        ${q.options.map((opt, oIndex) => `
+                            <div class="quiz-option" onclick="checkAcpFinalAnswer(${qIndex}, ${oIndex}, ${q.correct})">
+                                <span class="option-letter">${['A', 'B', 'C'][oIndex]}</span>
+                                <span class="option-text">${opt}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                container.appendChild(qDiv);
+            });
+        }
+
+        function checkAcpFinalAnswer(qIndex, selected, correct) {
+            const container = document.getElementById(`acpFinalQ${qIndex}`);
+            if (container.classList.contains('answered')) return;
+
+            container.classList.add('answered');
+            const options = container.querySelectorAll('.quiz-option');
+
+            options.forEach((opt, i) => {
+                opt.classList.add('disabled');
+                if (i === correct) opt.classList.add('correct');
+                else if (i === selected && selected !== correct) opt.classList.add('incorrect');
+            });
+
+            if (selected === correct) {
+                score += 10;
+                document.getElementById('scoreDisplay').textContent = score;
+                showConfetti();
+            }
+
+            acpFinalAnswered++;
+            if (acpFinalAnswered === acpFinalQuestions.length) {
+                document.getElementById('acp6Next').disabled = false;
+            }
+        }
+
+        function showResults(track) {
+            document.querySelectorAll('.game-screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('resultsScreen').classList.add('active');
+
+            const config = trackConfig[track];
+            document.getElementById('resultsTitle').textContent = `${config.name} Training Complete!`;
+            document.getElementById('resultsSubtitle').textContent = `You've mastered the ${config.name} protocol`;
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('maxScore').textContent = config.maxScore;
+            document.getElementById('correctAnswers').textContent = Math.floor(score / 10);
+            document.getElementById('levelsCompleted').textContent = config.levels.length;
+
+            const learnings = document.getElementById('keyLearnings');
+            if (track === 'acp') {
+                learnings.innerHTML = `
+                    <h3>📚 ACP Key Takeaways</h3>
+                    <ul>
+                        <li><span class="check-icon">✓</span><span><strong>Merchant of Record:</strong> Businesses retain this status—chargebacks stay with them</span></li>
+                        <li><span class="check-icon">✓</span><span><strong>SPT Constraints:</strong> max_amount, expires_at, and currency create hard security boundaries</span></li>
+                        <li><span class="check-icon">✓</span><span><strong>Zero Credential Exposure:</strong> AI agents never access PANs—only opaque SPT references</span></li>
+                        <li><span class="check-icon">✓</span><span><strong>Delegation Model:</strong> SPTs are purpose-built for third-party delegation with revocation</span></li>
+                    </ul>
+                `;
+                document.getElementById('specLink').onclick = () => window.open('https://www.agenticcommerce.dev/', '_blank');
+            } else {
+                learnings.innerHTML = `
+                    <h3>📚 AP2 Key Takeaways</h3>
+                    <ul>
+                        <li><span class="check-icon">✓</span><span><strong>Three Mandates:</strong> Intent → Cart → Payment creates a staged authorization chain</span></li>
+                        <li><span class="check-icon">✓</span><span><strong>VDCs:</strong> Tamper-evident, cryptographically signed credentials prove authorization</span></li>
+                        <li><span class="check-icon">✓</span><span><strong>Human-Present vs Not:</strong> Cart Mandate for explicit approval, Intent Mandate for autonomous actions</span></li>
+                        <li><span class="check-icon">✓</span><span><strong>Audit Trail:</strong> Signed chain shows exactly where authorization existed in disputes</span></li>
+                    </ul>
+                `;
+                document.getElementById('specLink').onclick = () => window.open('https://ap2-protocol.org/', '_blank');
+            }
+
+            document.querySelectorAll('.level-dot').forEach(dot => {
+                dot.classList.add('completed');
+                dot.classList.remove('current');
+            });
+            document.getElementById('progressFill').style.width = '100%';
+        }
+    </script>
+</body>
+</html>
