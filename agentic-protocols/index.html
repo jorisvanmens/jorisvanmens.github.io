@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agentic Commerce Academy - Learn ACP & AP2</title>
+    <title>AI Payments Protocols Academy - Learn ACP & AP2</title>
     <style>
         * {
             margin: 0;
@@ -1368,6 +1368,10 @@
                         <h4>🚫 Revocation</h4>
                         <p>Agent can deactivate token anytime via API.</p>
                     </div>
+                    <div class="guardrail-card" onclick="highlightCard(this)">
+                        <h4>📊 Risk Signals</h4>
+                        <p>SPTs pass fraud signals to issuer for better authorization rates.</p>
+                    </div>
                 </div>
             </div>
 
@@ -1562,7 +1566,7 @@
                     </div>
                     <div class="step-content">
                         <h4 style="color: #4285f4;">1. Intent Mandate</h4>
-                        <p>Sarah's request is captured and cryptographically signed: "Purchase running shoes, max $150, from authorized retailers." This delegates authority to the agent within defined constraints.</p>
+                        <p>Sarah's signed request: "Buy running shoes, max $150." Delegates authority within constraints.</p>
                     </div>
                 </div>
 
@@ -1576,7 +1580,7 @@
                     </div>
                     <div class="step-content">
                         <h4 style="color: #10b981;">2. Cart Mandate</h4>
-                        <p>Agent finds Nike Pegasus for $129. Sarah reviews and signs the Cart Mandate: "Nike Pegasus, $129, Foot Locker, size 9." This locks the specific purchase details.</p>
+                        <p>Sarah reviews and signs: "Nike Pegasus, $129, Foot Locker." Locks the specific purchase.</p>
                     </div>
                 </div>
 
@@ -1590,13 +1594,13 @@
                     </div>
                     <div class="step-content">
                         <h4 style="color: #f59e0b;">3. Payment Mandate</h4>
-                        <p>Sent to payment processor signaling "this is agent-initiated, user approved via Cart Mandate." Enables the payment network to process with full context.</p>
+                        <p>Signals to payment processor: "agent-initiated, user approved." Full context for the network.</p>
                     </div>
                 </div>
             </div>
 
             <div class="info-box ap2">
-                <p>💡 <strong>Each mandate is signed:</strong> This creates a cryptographic chain where each step is attributable and verifiable. If something goes wrong, the chain shows exactly where authorization existed (or didn't).</p>
+                <p>💡 <strong>Each mandate is signed:</strong> Creates a cryptographic chain showing exactly where authorization existed.</p>
             </div>
 
             <div class="quiz-container">
@@ -1648,7 +1652,7 @@
             </div>
 
             <div class="info-box ap2">
-                <p>💡 <strong>Tamper-evident:</strong> Signatures are tied to the exact content. When Sarah signed her Cart Mandate for the Nike Pegasus at $129, that signature is cryptographically bound to those exact values. If anyone modifies "$129" to "$229", verification fails.</p>
+                <p>💡 <strong>Tamper-evident:</strong> Signatures are bound to exact values. If anyone modifies "$129" to "$229", verification fails.</p>
             </div>
 
             <div class="quiz-container">
@@ -1697,7 +1701,7 @@
             </div>
 
             <div class="info-box ap2">
-                <p>💡 <strong>The Intent Mandate bridges the gap:</strong> In traditional checkout, the human clicking "buy" IS the authorization. With autonomous agents, the Intent Mandate serves as that authorization—"you may act on my behalf, within these bounds."</p>
+                <p>💡 <strong>The Intent Mandate bridges the gap:</strong> With autonomous agents, the Intent Mandate serves as authorization—"you may act on my behalf, within these bounds."</p>
             </div>
 
             <div class="quiz-container">
@@ -1818,7 +1822,11 @@
             </div>
 
             <div class="info-box ap2">
-                <p>💡 <strong>Separation of concerns:</strong> Unlike traditional payments where the card network handles everything, AP2 explicitly separates credential issuance from payment processing. This allows specialized providers for each function.</p>
+                <p>💡 <strong>Separation of concerns:</strong> AP2 separates credential issuance from payment processing, allowing specialized providers for each function.</p>
+            </div>
+
+            <div class="info-box ap2">
+                <p>🔗 <strong>Works with A2A/MCP:</strong> AP2 mandates can be exchanged via Google's Agent-to-Agent (A2A) protocol or Anthropic's Model Context Protocol (MCP), enabling interoperability between different agent frameworks.</p>
             </div>
 
             <div class="quiz-container">
@@ -1888,6 +1896,8 @@
                 <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
                     <button class="btn btn-primary" onclick="goToWelcome()">Play Again 🔄</button>
                 </div>
+
+                <p style="margin-top: 30px; font-size: 0.85rem; color: var(--gray);">Built by <a href="https://www.jorisvanmens.com" target="_blank" style="color: var(--primary);">Joris van Mens</a></p>
             </div>
         </div>
 
@@ -2287,7 +2297,7 @@
             },
             {
                 q: 'Based on Mission 3: an SPT is issued with max_amount: 10000 ($100). Can the merchant split this into two $50 charges?',
-                options: ['Yes, as long as total doesn\'t exceed max_amount', 'No, SPTs are single-use—one charge attempt only', 'Yes, but only if both happen before expires_at'],
+                options: ['Yes, as long as total doesn\'t exceed max_amount', 'No, SPTs are single-use—one transaction only', 'Yes, but only if both happen before expires_at'],
                 correct: 1
             }
         ];
