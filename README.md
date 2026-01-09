@@ -1,1 +1,3 @@
-Energy pricing lookup tool for PG&E Hourly Flex Pricing Pilot - see <a href="http://apps.jorisvanmens.com/hourly-pricing">apps.jorisvanmens.com/hourly_pricing</a>
+Lightweight web apps, mostly vibe-coded
+Energy pricing lookup tool for PG&E Hourly Flex Pricing Pilot: <a href="http://apps.jorisvanmens.com/hourly-pricing">apps.jorisvanmens.com/hourly_pricing</a>
+Agentic Commerce Protocol learning game: <a href="http://apps.jorisvanmens.com/agentic-protocols">apps.jorisvanmens.com/agentic-protocols</a>
