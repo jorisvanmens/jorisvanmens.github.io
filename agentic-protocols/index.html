@@ -2030,19 +2030,19 @@
             </div>
 
             <div class="quiz-container">
-                <p class="quiz-question">The agent finds shoes for $175 and purchases them without showing Sarah the Cart Mandate. Who bears responsibility?</p>
+                <p class="quiz-question">Sarah's agent finds four shoe options from different merchants: Nike ($140), Adidas ($135), Brooks ($145), and New Balance ($130). The agent presents these to Sarah, and she selects the Brooks shoes. What is Sarah signing when she approves this selection?</p>
                 <div class="quiz-options">
-                    <div class="quiz-option" onclick="checkAnswer(this, true, 'ap21')">
-                        <span class="option-letter">A</span>
-                        <span class="option-text">The agent platform—they exceeded the Intent Mandate's $150 constraint without a signed Cart Mandate</span>
-                    </div>
                     <div class="quiz-option" onclick="checkAnswer(this, false, 'ap21')">
+                        <span class="option-letter">A</span>
+                        <span class="option-text">An Intent Mandate—she's expressing her preference</span>
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(this, true, 'ap21')">
                         <span class="option-letter">B</span>
-                        <span class="option-text">Sarah—she delegated authority when she signed the Intent Mandate</span>
+                        <span class="option-text">A Cart Mandate—she's authorizing this specific purchase from this merchant</span>
                     </div>
                     <div class="quiz-option" onclick="checkAnswer(this, false, 'ap21')">
                         <span class="option-letter">C</span>
-                        <span class="option-text">The merchant—they should have verified the Cart Mandate</span>
+                        <span class="option-text">A Payment Mandate—she's completing the transaction</span>
                     </div>
                 </div>
             </div>
@@ -2976,9 +2976,9 @@ spaceship.innerHTML = `<svg viewBox="0 0 32 24" fill="${color}">
         // AP2 Final Quiz
         const ap2FinalQuestions = [
             {
-                q: 'In Mission 1, we learned about the three mandates. If an agent purchases something that exceeds the Intent Mandate\'s constraints, who is responsible?',
-                options: ['The merchant who accepted the payment', 'The agent platform—they exceeded the authorized constraints', 'The payment processor who approved it'],
-                correct: 1
+                q: 'When a user signs an Intent Mandate allowing autonomous purchases, what risk are they accepting?',
+                options: ['The agent may act within the constraints without showing each item first', 'The merchant can charge any amount they want', 'The credentials provider can reject all transactions'],
+                correct: 0
             },
             {
                 q: 'Based on Mission 3: which role is responsible for issuing and managing VDCs that prove identity and authorization?',
@@ -3129,8 +3129,7 @@ spaceship.innerHTML = `<svg viewBox="0 0 32 24" fill="${color}">
 
 <span class="signature-invalid">⚠ DISCREPANCY DETECTED:</span>
 <span class="signature-invalid">Cart Mandate shows: $300</span>
-<span class="signature-invalid">Amount charged: $500</span>
-<span style="color: var(--gray);">Merchant charged $200 more than the signed Cart Mandate</span>`
+<span class="signature-invalid">Amount charged: $500</span>`
             }
         };
 
