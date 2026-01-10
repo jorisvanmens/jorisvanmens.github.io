@@ -87,6 +87,33 @@
             100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
         }
 
+        .spaceships {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .spaceship {
+            position: absolute;
+            opacity: 0.15;
+            animation: flyAcross linear infinite;
+        }
+
+        .spaceship svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        @keyframes flyAcross {
+            0% { transform: translateX(-100px) translateY(0); }
+            100% { transform: translateX(calc(100vw + 100px)) translateY(-50px); }
+        }
+
         .game-container {
             max-width: 900px;
             margin: 0 auto;
@@ -274,6 +301,9 @@
             height: 120px;
             margin: 0 auto 20px;
             animation: logoFloat 3s ease-in-out infinite;
+            position: relative;
+            overflow: hidden;
+            border-radius: 20px;
         }
 
         .welcome-logo img {
@@ -282,9 +312,33 @@
             object-fit: contain;
         }
 
+        .welcome-logo::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to right,
+                transparent 0%,
+                transparent 35%,
+                rgba(255, 255, 255, 0.4) 50%,
+                transparent 65%,
+                transparent 100%
+            );
+            transform: rotate(25deg) translateX(-150%);
+            animation: logoShimmer 4s ease-in-out infinite;
+        }
+
         @keyframes logoFloat {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-10px); }
+        }
+
+        @keyframes logoShimmer {
+            0%, 85% { transform: rotate(25deg) translateX(-150%); }
+            100% { transform: rotate(25deg) translateX(150%); }
         }
 
         .welcome-content h2 {
@@ -1162,6 +1216,7 @@
 <body>
     <div class="bg-animation"></div>
     <div class="particles" id="particles"></div>
+    <div class="spaceships" id="spaceships"></div>
     <div class="confetti-container" id="confettiContainer"></div>
 
     <div class="game-container">
@@ -1559,9 +1614,8 @@
                 <div class="scenario-step-with-graphic">
                     <div class="mandate-graphic intent">
                         <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                            <circle cx="12" cy="12" r="10"/>
-                            <path d="M12 6v6l4 2"/>
-                            <path d="M9 12h6" stroke-linecap="round"/>
+                            <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+                            <path d="M15 5l4 4"/>
                         </svg>
                     </div>
                     <div class="step-content">
@@ -1797,23 +1851,23 @@
             </div>
 
             <div class="diagram-container">
-                <div class="three-parties" style="flex-wrap: wrap;">
-                    <div class="party-card" onclick="selectParty(this)" style="border-color: rgba(66, 133, 244, 0.3);">
+                <div class="three-parties" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; max-width: 600px; margin: 0 auto;">
+                    <div class="party-card" onclick="selectParty(this)" style="border-color: rgba(66, 133, 244, 0.3); width: 100%;">
                         <div class="party-icon">🛒</div>
                         <h3>Shopper</h3>
                         <p>The end user who initiates purchases through their AI agent and signs mandates to authorize transactions</p>
                     </div>
-                    <div class="party-card" onclick="selectParty(this)" style="border-color: rgba(66, 133, 244, 0.3);">
+                    <div class="party-card" onclick="selectParty(this)" style="border-color: rgba(66, 133, 244, 0.3); width: 100%;">
                         <div class="party-icon">🏪</div>
                         <h3>Merchant</h3>
                         <p>Sells goods/services, receives mandates from agents, and submits payment requests to processors</p>
                     </div>
-                    <div class="party-card" onclick="selectParty(this)" style="border-color: rgba(66, 133, 244, 0.3);">
+                    <div class="party-card" onclick="selectParty(this)" style="border-color: rgba(66, 133, 244, 0.3); width: 100%;">
                         <div class="party-icon">🔐</div>
                         <h3>Credentials Provider</h3>
                         <p>Issues and manages Verifiable Digital Credentials (VDCs) that prove identity and authorization</p>
                     </div>
-                    <div class="party-card" onclick="selectParty(this)" style="border-color: rgba(66, 133, 244, 0.3);">
+                    <div class="party-card" onclick="selectParty(this)" style="border-color: rgba(66, 133, 244, 0.3); width: 100%;">
                         <div class="party-icon">💳</div>
                         <h3>Payment Processor</h3>
                         <p>Validates the mandate chain, processes payments, and maintains the cryptographic audit trail</p>
@@ -1823,10 +1877,6 @@
 
             <div class="info-box ap2">
                 <p>💡 <strong>Separation of concerns:</strong> AP2 separates credential issuance from payment processing, allowing specialized providers for each function.</p>
-            </div>
-
-            <div class="info-box ap2">
-                <p>🔗 <strong>Works with A2A/MCP:</strong> AP2 mandates can be exchanged via Google's Agent-to-Agent (A2A) protocol or Anthropic's Model Context Protocol (MCP), enabling interoperability between different agent frameworks.</p>
             </div>
 
             <div class="quiz-container">
@@ -1948,6 +1998,35 @@
             }
         }
         createParticles();
+
+        // Initialize spaceships
+        function createSpaceships() {
+            const container = document.getElementById('spaceships');
+            const mutedColors = ['#3d3a5c', '#4a4766', '#2d2b44', '#393654', '#35334d'];
+
+            for (let i = 0; i < 6; i++) {
+                const spaceship = document.createElement('div');
+                spaceship.className = 'spaceship';
+                const size = 20 + Math.random() * 25;
+                spaceship.style.width = size + 'px';
+                spaceship.style.height = size + 'px';
+                spaceship.style.top = (10 + Math.random() * 80) + '%';
+                spaceship.style.left = '-100px';
+                const duration = 25 + Math.random() * 20;
+                spaceship.style.animationDuration = duration + 's';
+                spaceship.style.animationDelay = (i * 7 + Math.random() * 5) + 's';
+                const color = mutedColors[Math.floor(Math.random() * mutedColors.length)];
+                spaceship.innerHTML = `<svg viewBox="0 0 32 32" fill="${color}">
+                    <path d="M28 16c0-1.5-3-6-12-6s-12 4.5-12 6 3 6 12 6 12-4.5 12-6z"/>
+                    <ellipse cx="16" cy="16" rx="5" ry="3" fill="${color}" opacity="0.8"/>
+                    <circle cx="16" cy="16" r="2" fill="${color}" opacity="0.6"/>
+                    <path d="M6 16c-2-3-3-2-4 0s2 3 4 0z" fill="${color}" opacity="0.7"/>
+                    <path d="M26 16c2-3 3-2 4 0s-2 3-4 0z" fill="${color}" opacity="0.7"/>
+                </svg>`;
+                container.appendChild(spaceship);
+            }
+        }
+        createSpaceships();
 
         // Confetti effect - green shades with color shifting
         function showConfetti() {
