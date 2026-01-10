@@ -1522,6 +1522,7 @@
             .transform-arrow { transform: rotate(90deg); }
             .track-selection { flex-direction: column; align-items: center; }
             .track-card { width: 100%; max-width: 320px; }
+            .welcome-stats { display: none; }
         }
 
         .credits {
@@ -1574,7 +1575,7 @@
 
         <!-- Welcome Screen -->
         <div class="game-screen active" id="welcomeScreen" style="position: relative;">
-            <div class="stats-row" style="position: absolute; top: 15px; right: 15px;">
+            <div class="stats-row welcome-stats" style="position: absolute; top: 15px; right: 15px;">
                 <div class="lives-container">
                     <span class="heart">❤️</span>
                     <span class="heart">❤️</span>
@@ -2398,13 +2399,17 @@
                 spaceship.style.animationDuration = duration + 's';
                 spaceship.style.animationDelay = (i * 7 + Math.random() * 5) + 's';
                 const color = mutedColors[Math.floor(Math.random() * mutedColors.length)];
-                spaceship.innerHTML = `<svg viewBox="0 0 40 20" fill="${color}">
-                    <path d="M38 10 L28 6 L8 8 L2 10 L8 12 L28 14 Z" opacity="0.9"/>
-                    <path d="M28 6 L24 2 L20 6 Z" opacity="0.7"/>
-                    <path d="M28 14 L24 18 L20 14 Z" opacity="0.7"/>
-                    <ellipse cx="12" cy="10" rx="4" ry="2" opacity="0.5"/>
-                    <circle cx="6" cy="10" r="1.5" fill="#6366f1" opacity="0.6"/>
-                    <path d="M2 10 L-2 8 L-2 12 Z" fill="#818cf8" opacity="0.4"/>
+spaceship.innerHTML = `<svg viewBox="0 0 32 24" fill="${color}">
+                    <!-- Classic arcade spaceship design -->
+                    <rect x="14" y="2" width="4" height="4" opacity="0.9"/>
+                    <rect x="12" y="6" width="8" height="4" opacity="0.9"/>
+                    <rect x="10" y="10" width="12" height="6" opacity="0.9"/>
+                    <rect x="6" y="14" width="4" height="6" opacity="0.8"/>
+                    <rect x="22" y="14" width="4" height="6" opacity="0.8"/>
+                    <rect x="8" y="16" width="2" height="6" opacity="0.7"/>
+                    <rect x="22" y="16" width="2" height="6" opacity="0.7"/>
+                    <rect x="14" y="16" width="4" height="4" opacity="0.6"/>
+                    <rect x="15" y="8" width="2" height="2" fill="#6366f1" opacity="0.7"/>
                 </svg>`;
                 container.appendChild(spaceship);
             }
@@ -2538,6 +2543,8 @@
             document.querySelectorAll('.game-screen').forEach(s => s.classList.remove('active'));
             document.getElementById('levelTransitionScreen').classList.add('active');
             showConfetti(); // Celebrate Level 1 completion
+            // Scroll to top on mobile
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         // Start Level 2 (AP2)
@@ -2560,6 +2567,8 @@
         function showFinalResults() {
             document.querySelectorAll('.game-screen').forEach(s => s.classList.remove('active'));
             document.getElementById('resultsScreen').classList.add('active');
+            // Scroll to top on mobile
+            window.scrollTo({ top: 0, behavior: 'smooth' });
 
             document.getElementById('resultsTitle').textContent = 'Training Complete!';
             document.getElementById('resultsSubtitle').textContent = "You've mastered both ACP and AP2 protocols";
@@ -2608,6 +2617,8 @@
             document.querySelectorAll('.game-screen').forEach(s => s.classList.remove('active'));
             document.getElementById('welcomeScreen').classList.add('active');
             document.getElementById('progressContainer').style.display = 'none';
+            // Scroll to top on mobile
+            window.scrollTo({ top: 0, behavior: 'smooth' });
             currentTrack = null;
             currentLevel = '';
             score = 0;
@@ -2714,6 +2725,8 @@
             // Handle special screens
             if (levelId === 'levelTransition') {
                 document.getElementById('levelTransitionScreen').classList.add('active');
+                // Scroll to top on mobile
+                window.scrollTo({ top: 0, behavior: 'smooth' });
                 return;
             }
 
@@ -2723,6 +2736,9 @@
 
             if (levelId === 'acp6') initAcpFinalQuiz();
             if (levelId === 'ap26') initAp2FinalQuiz();
+
+            // Scroll to top on mobile
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function updateProgress() {
@@ -3003,6 +3019,8 @@
         function showResults(track) {
             document.querySelectorAll('.game-screen').forEach(s => s.classList.remove('active'));
             document.getElementById('resultsScreen').classList.add('active');
+            // Scroll to top on mobile
+            window.scrollTo({ top: 0, behavior: 'smooth' });
 
             const config = trackConfig[track];
             document.getElementById('resultsTitle').textContent = `${config.name} Training Complete!`;
