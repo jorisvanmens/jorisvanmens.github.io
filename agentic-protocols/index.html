@@ -1335,6 +1335,54 @@
         .results-icon {
             font-size: 5rem;
             margin-bottom: 20px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .dancing-robot {
+            display: inline-block;
+            animation: dance 0.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes dance {
+            0% { transform: translateY(0) rotate(-5deg); }
+            100% { transform: translateY(-10px) rotate(5deg); }
+        }
+
+        .firework {
+            position: absolute;
+            font-size: 2rem;
+            animation: firework 1s ease-out infinite;
+        }
+
+        .firework:nth-child(1) {
+            top: -10px;
+            left: -30px;
+            animation-delay: 0s;
+        }
+
+        .firework:nth-child(2) {
+            top: -15px;
+            right: -30px;
+            animation-delay: 0.3s;
+        }
+
+        .firework:nth-child(3) {
+            top: 0;
+            left: -40px;
+            animation-delay: 0.6s;
+        }
+
+        .firework:nth-child(4) {
+            top: -5px;
+            right: -40px;
+            animation-delay: 0.9s;
+        }
+
+        @keyframes firework {
+            0% { opacity: 0; transform: scale(0.5) translateY(10px); }
+            50% { opacity: 1; transform: scale(1.2) translateY(-5px); }
+            100% { opacity: 0; transform: scale(0.8) translateY(-15px); }
         }
 
         .results-content h2 {
@@ -2324,7 +2372,13 @@
         <!-- Results Screen -->
         <div class="game-screen" id="resultsScreen">
             <div class="results-content">
-                <div class="results-icon">🎓</div>
+                <div class="results-icon">
+                    <span class="firework">🎆</span>
+                    <span class="firework">🎆</span>
+                    <span class="firework">🎇</span>
+                    <span class="firework">🎇</span>
+                    <span class="dancing-robot">🤖</span>
+                </div>
                 <h2 id="resultsTitle">Training Complete!</h2>
                 <p style="color: var(--gray);" id="resultsSubtitle">You've completed the training</p>
 
@@ -2608,7 +2662,7 @@ spaceship.innerHTML = `<svg viewBox="0 0 32 24" fill="${color}">
                     <li><span class="check-icon">✓</span><span><strong>Zero Credential Exposure:</strong> Both protocols keep PANs away from AI agents</span></li>
                     <li><span class="check-icon">✓</span><span><strong>Audit & Liability:</strong> Clear attribution chains for dispute resolution</span></li>
                 </ul>
-                <p style="margin-top: 20px; color: var(--gray); font-size: 0.95rem;">There's more to learn, such as how product listings work, how they relate to other protocols (e.g. MCP), and implementation specifics. Read the full specs: <a href="https://www.agenticcommerce.dev/" target="_blank" style="color: var(--primary);">ACP</a>, <a href="https://ap2-protocol.org/" target="_blank" style="color: var(--secondary);">AP2</a>.</p>
+                <p style="margin-top: 20px; color: var(--gray); font-size: 0.95rem;">Learn more on the official websites: <a href="https://www.agenticcommerce.dev/" target="_blank" style="color: var(--primary);">ACP</a>, <a href="https://ap2-protocol.org/" target="_blank" style="color: var(--secondary);">AP2</a>.</p>
             `;
 
             document.getElementById('specLink').onclick = () => window.open('https://www.agenticcommerce.dev/', '_blank');
