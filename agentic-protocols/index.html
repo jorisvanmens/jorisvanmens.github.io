@@ -2619,8 +2619,8 @@ spaceship.innerHTML = `<svg viewBox="0 0 32 24" fill="${color}">
             document.querySelectorAll('.game-screen').forEach(s => s.classList.remove('active'));
             document.getElementById('levelTransitionScreen').classList.add('active');
             showConfetti(); // Celebrate Level 1 completion
-            // Scroll to top on mobile
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            // Scroll to progress bar on mobile
+            document.getElementById('progressContainer').scrollIntoView({ behavior: 'smooth' });
         }
 
         // Start Level 2 (AP2)
@@ -2643,8 +2643,8 @@ spaceship.innerHTML = `<svg viewBox="0 0 32 24" fill="${color}">
         function showFinalResults() {
             document.querySelectorAll('.game-screen').forEach(s => s.classList.remove('active'));
             document.getElementById('resultsScreen').classList.add('active');
-            // Scroll to top on mobile
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            // Scroll to progress bar on mobile
+            document.getElementById('progressContainer').scrollIntoView({ behavior: 'smooth' });
 
             document.getElementById('resultsTitle').textContent = 'Training Complete!';
             document.getElementById('resultsSubtitle').textContent = "You've mastered the payments basics of ACP and AP2";
@@ -2802,8 +2802,8 @@ spaceship.innerHTML = `<svg viewBox="0 0 32 24" fill="${color}">
             // Handle special screens
             if (levelId === 'levelTransition') {
                 document.getElementById('levelTransitionScreen').classList.add('active');
-                // Scroll to top on mobile
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+                // Scroll to progress bar on mobile
+                document.getElementById('progressContainer').scrollIntoView({ behavior: 'smooth' });
                 return;
             }
 
@@ -2814,8 +2814,8 @@ spaceship.innerHTML = `<svg viewBox="0 0 32 24" fill="${color}">
             if (levelId === 'acp6') initAcpFinalQuiz();
             if (levelId === 'ap26') initAp2FinalQuiz();
 
-            // Scroll to top on mobile
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            // Scroll to progress bar on mobile
+            document.getElementById('progressContainer').scrollIntoView({ behavior: 'smooth' });
         }
 
         function updateProgress() {
@@ -3096,8 +3096,8 @@ spaceship.innerHTML = `<svg viewBox="0 0 32 24" fill="${color}">
         function showResults(track) {
             document.querySelectorAll('.game-screen').forEach(s => s.classList.remove('active'));
             document.getElementById('resultsScreen').classList.add('active');
-            // Scroll to top on mobile
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            // Scroll to progress bar on mobile
+            document.getElementById('progressContainer').scrollIntoView({ behavior: 'smooth' });
 
             const config = trackConfig[track];
             document.getElementById('resultsTitle').textContent = `${config.name} Training Complete!`;
