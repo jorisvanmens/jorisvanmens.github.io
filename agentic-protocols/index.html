@@ -514,6 +514,29 @@
             color: var(--gray);
         }
 
+        .track-card .protocol-fullname {
+            font-size: 0.8rem;
+            color: var(--gray);
+            margin-top: 2px;
+            margin-bottom: 8px;
+            opacity: 0.8;
+        }
+
+        .track-card .company-logos {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 15px;
+            min-height: 20px;
+        }
+
+        .track-card .company-logos img {
+            height: 16px;
+            width: auto;
+            opacity: 0.7;
+        }
+
         .btn {
             padding: 15px 40px;
             font-size: 1.1rem;
@@ -1598,14 +1621,21 @@
                     <div class="track-card acp" onclick="startGame()">
                         <div style="font-size: 0.75rem; color: var(--secondary); margin-bottom: 8px; font-weight: 600;">LEVEL 1</div>
                         <h3>ACP</h3>
-                        <div class="track-subtitle">Stripe & OpenAI</div>
+                        <div class="protocol-fullname">Agentic Commerce Protocol</div>
+                        <div class="company-logos">
+                            <img src="stripe-logo-white.png" alt="Stripe">
+                            <img src="openai-logo-white.png" alt="OpenAI">
+                        </div>
                         <div class="track-desc">Learn about Shared Payment Tokens, merchant-of-record architecture, and SPT guardrails.</div>
                         <div class="track-meta">6 missions</div>
                     </div>
                     <div class="track-card ap2" onclick="startLevel2()">
                         <div style="font-size: 0.75rem; color: var(--google-blue); margin-bottom: 8px; font-weight: 600;">LEVEL 2</div>
                         <h3>AP2</h3>
-                        <div class="track-subtitle">Google</div>
+                        <div class="protocol-fullname">Agent Payments Protocol</div>
+                        <div class="company-logos">
+                            <img src="google-logo-white.png" alt="Google">
+                        </div>
                         <div class="track-desc">Learn about the three mandates, Verifiable Digital Credentials, and cryptographic audit trails.</div>
                         <div class="track-meta">6 missions</div>
                     </div>
