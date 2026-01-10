@@ -204,6 +204,77 @@
             color: var(--secondary);
         }
 
+        .lives-container {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .heart {
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .heart.lost {
+            opacity: 0.2;
+            transform: scale(0.8);
+        }
+
+        .heart.losing {
+            animation: heartBreak 0.5s ease;
+        }
+
+        @keyframes heartBreak {
+            0% { transform: scale(1); }
+            25% { transform: scale(1.3); }
+            50% { transform: scale(0.8); opacity: 0.5; }
+            100% { transform: scale(0.8); opacity: 0.2; }
+        }
+
+        .game-over-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 15, 26, 0.95);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .game-over-content {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .game-over-content h2 {
+            font-size: 2.5rem;
+            color: var(--accent);
+            margin-bottom: 20px;
+        }
+
+        .game-over-content p {
+            color: var(--gray);
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+
+        .stats-row {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        .stats-row .score, .stats-row .lives-container {
+            background: var(--dark);
+            padding: 8px 16px;
+            border-radius: 10px;
+        }
+
         .progress-bar {
             height: 8px;
             background: rgba(99, 91, 255, 0.2);
@@ -999,6 +1070,235 @@
         }
         .action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
+        /* Dispute Detective Simulation */
+        .detective-sim {
+            background: var(--darker);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+
+        .dispute-case {
+            background: linear-gradient(135deg, rgba(66, 133, 244, 0.1), rgba(52, 168, 83, 0.1));
+            border: 1px solid rgba(66, 133, 244, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .dispute-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .dispute-claims {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 600px) {
+            .dispute-claims {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .claim-card {
+            background: var(--dark);
+            border-radius: 10px;
+            padding: 15px;
+            border: 2px solid transparent;
+        }
+
+        .claim-card.user-claim {
+            border-color: rgba(66, 133, 244, 0.3);
+        }
+
+        .claim-card.merchant-claim {
+            border-color: rgba(245, 158, 11, 0.3);
+        }
+
+        .claim-card h4 {
+            font-size: 0.85rem;
+            color: var(--gray);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .claim-card .amount {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .claim-card.user-claim .amount { color: var(--google-blue); }
+        .claim-card.merchant-claim .amount { color: #f59e0b; }
+
+        .evidence-panel {
+            background: var(--dark);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .evidence-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .evidence-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .evidence-tab {
+            padding: 8px 16px;
+            background: var(--darker);
+            border: 1px solid rgba(66, 133, 244, 0.2);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+        }
+
+        .evidence-tab:hover {
+            border-color: var(--google-blue);
+        }
+
+        .evidence-tab.active {
+            background: rgba(66, 133, 244, 0.2);
+            border-color: var(--google-blue);
+            color: var(--google-blue);
+        }
+
+        .evidence-tab.examined {
+            position: relative;
+        }
+
+        .evidence-tab.examined::after {
+            content: '✓';
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--google-green);
+            color: white;
+            font-size: 0.6rem;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .evidence-content {
+            background: #1e1e2e;
+            border-radius: 10px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            min-height: 120px;
+            border: 1px solid rgba(66, 133, 244, 0.2);
+        }
+
+        .evidence-content .signature-valid {
+            color: var(--google-green);
+        }
+
+        .evidence-content .signature-invalid {
+            color: var(--accent);
+        }
+
+        .verdict-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .verdict-btn {
+            flex: 1;
+            min-width: 200px;
+            padding: 15px 20px;
+            background: var(--dark);
+            border: 2px solid rgba(66, 133, 244, 0.3);
+            border-radius: 12px;
+            color: var(--light);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+
+        .verdict-btn:hover {
+            border-color: var(--google-blue);
+            transform: translateY(-2px);
+        }
+
+        .verdict-btn h4 {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 5px;
+        }
+
+        .verdict-btn p {
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+
+        .verdict-btn.correct {
+            border-color: var(--google-green);
+            background: rgba(52, 168, 83, 0.2);
+        }
+
+        .verdict-btn.incorrect {
+            border-color: var(--accent);
+            background: rgba(255, 107, 107, 0.2);
+        }
+
+        .verdict-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .detective-result {
+            background: var(--dark);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 2px solid var(--google-green);
+            display: none;
+        }
+
+        .detective-result.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .detective-result h4 {
+            color: var(--google-green);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .detective-result p {
+            color: var(--gray);
+            line-height: 1.6;
+        }
+
         .results-content {
             text-align: center;
             padding: 40px 20px;
@@ -1243,9 +1543,16 @@
         <div class="progress-container" id="progressContainer" style="display: none;">
             <div class="progress-header">
                 <span id="levelName">Mission 1</span>
-                <div class="score">
-                    <span>⭐</span>
-                    <span id="scoreDisplay">0</span>
+                <div class="stats-row">
+                    <div class="lives-container" id="livesContainer">
+                        <span class="heart" id="heart1">❤️</span>
+                        <span class="heart" id="heart2">❤️</span>
+                        <span class="heart" id="heart3">❤️</span>
+                    </div>
+                    <div class="score">
+                        <span>⭐</span>
+                        <span id="scoreDisplay">0</span>
+                    </div>
                 </div>
             </div>
             <div class="progress-bar">
@@ -1802,57 +2109,87 @@
             </div>
         </div>
 
-        <!-- AP2 Level 4: Audit Trail -->
+        <!-- AP2 Level 4: Dispute Detective Simulation -->
         <div class="game-screen" id="ap24Screen">
             <div class="level-header">
                 <span class="level-badge ap2">Level 2: AP2 • Mission 5 of 6</span>
-                <h2>The Cryptographic Audit Trail</h2>
-                <p>How the signed mandate chain resolves disputes</p>
+                <h2>Dispute Detective</h2>
+                <p>You're the auditor. Examine the evidence and deliver your verdict.</p>
             </div>
 
-            <div class="diagram-container">
-                <div class="flow-container">
-                    <div class="flow-step" onclick="activateFlowStep(0, 'ap2')">
-                        <div class="flow-icon" id="ap2Flow0">📝</div>
-                        <span class="flow-label">Intent Mandate signed</span>
+            <div class="detective-sim">
+                <div class="sim-header">
+                    <div class="sim-title">
+                        <span>🔍</span>
+                        <strong>Case #7429: The $200 Discrepancy</strong>
                     </div>
-                    <span class="flow-arrow" id="ap2Arrow0">→</span>
-                    <div class="flow-step" onclick="activateFlowStep(1, 'ap2')">
-                        <div class="flow-icon" id="ap2Flow1">🛒</div>
-                        <span class="flow-label">Cart Mandate signed</span>
+                    <span class="sim-status" id="detectiveSimStatus">Investigating</span>
+                </div>
+
+                <div class="dispute-case">
+                    <div class="dispute-header">
+                        <span>⚖️</span> Dispute Filed
                     </div>
-                    <span class="flow-arrow" id="ap2Arrow1">→</span>
-                    <div class="flow-step" onclick="activateFlowStep(2, 'ap2')">
-                        <div class="flow-icon" id="ap2Flow2">💳</div>
-                        <span class="flow-label">Payment processed</span>
-                    </div>
-                    <span class="flow-arrow" id="ap2Arrow2">→</span>
-                    <div class="flow-step" onclick="activateFlowStep(3, 'ap2')">
-                        <div class="flow-icon" id="ap2Flow3">🔍</div>
-                        <span class="flow-label">Audit if disputed</span>
+                    <p style="color: var(--gray); margin-bottom: 15px;">A user claims they only approved $300 for a laptop purchase, but the merchant charged $500. Both parties are adamant. Your job: examine the cryptographic evidence.</p>
+
+                    <div class="dispute-claims">
+                        <div class="claim-card user-claim">
+                            <h4>👤 User Claims</h4>
+                            <div class="amount">$300</div>
+                            <p style="font-size: 0.8rem; color: var(--gray); margin-top: 5px;">"I only approved $300 for the laptop"</p>
+                        </div>
+                        <div class="claim-card merchant-claim">
+                            <h4>🏪 Merchant Claims</h4>
+                            <div class="amount">$500</div>
+                            <p style="font-size: 0.8rem; color: var(--gray); margin-top: 5px;">"User agreed to $500 including accessories"</p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="info-box ap2" id="ap2FlowInfo">
-                <p>👆 Click each step to see how the audit trail works at each stage.</p>
-            </div>
+                <div class="evidence-panel">
+                    <div class="evidence-header">
+                        <span>📁</span> Evidence Locker
+                    </div>
+                    <div class="evidence-tabs">
+                        <button class="evidence-tab active" onclick="showEvidence('intent')">Intent Mandate</button>
+                        <button class="evidence-tab" onclick="showEvidence('cart')">Cart Mandate</button>
+                        <button class="evidence-tab" onclick="showEvidence('payment')">Payment Record</button>
+                    </div>
+                    <div class="evidence-content" id="evidenceContent">
+                        <pre id="evidenceText">{
+  <span class="json-key">"type"</span>: <span class="json-string">"IntentMandate"</span>,
+  <span class="json-key">"user_id"</span>: <span class="json-string">"user_8x7k2m"</span>,
+  <span class="json-key">"intent"</span>: <span class="json-string">"Purchase laptop"</span>,
+  <span class="json-key">"max_amount"</span>: <span class="json-number">50000</span>,
+  <span class="json-key">"currency"</span>: <span class="json-string">"usd"</span>,
+  <span class="json-key">"user_signature"</span>: <span class="json-string">"eyJhbGc..."</span>,
+  <span class="json-key">"signed_at"</span>: <span class="json-number">1751587200</span>
+}
 
-            <div class="quiz-container">
-                <p class="quiz-question">A merchant claims the user approved $500, but the user's Cart Mandate shows $300. The merchant cannot produce a signed mandate showing $500. What's the resolution?</p>
-                <div class="quiz-options">
-                    <div class="quiz-option" onclick="checkAnswer(this, false, 'ap24')">
-                        <span class="option-letter">A</span>
-                        <span class="option-text">Split the difference—neither party has definitive proof</span>
+<span class="signature-valid">✓ Signature verified - max_amount: $500</span></pre>
                     </div>
-                    <div class="quiz-option" onclick="checkAnswer(this, true, 'ap24')">
-                        <span class="option-letter">B</span>
-                        <span class="option-text">The merchant bears responsibility—they can't produce cryptographic proof of $500 authorization</span>
-                    </div>
-                    <div class="quiz-option" onclick="checkAnswer(this, false, 'ap24')">
-                        <span class="option-letter">C</span>
-                        <span class="option-text">The payment processor decides based on transaction history</span>
-                    </div>
+                </div>
+
+                <p style="color: var(--gray); margin-bottom: 15px; font-size: 0.9rem;">🔎 Examine all evidence before delivering your verdict.</p>
+
+                <div class="verdict-buttons" id="verdictButtons">
+                    <button class="verdict-btn" onclick="submitVerdict('user')">
+                        <h4>👤 Rule for User</h4>
+                        <p>Merchant overcharged - refund $200</p>
+                    </button>
+                    <button class="verdict-btn" onclick="submitVerdict('merchant')">
+                        <h4>🏪 Rule for Merchant</h4>
+                        <p>Charge was properly authorized</p>
+                    </button>
+                    <button class="verdict-btn" onclick="submitVerdict('split')">
+                        <h4>⚖️ Split Decision</h4>
+                        <p>Both share responsibility</p>
+                    </button>
+                </div>
+
+                <div class="detective-result" id="detectiveResult">
+                    <h4><span>✓</span> Case Closed</h4>
+                    <p id="detectiveResultText"></p>
                 </div>
             </div>
 
@@ -1981,9 +2318,12 @@
         let currentTrack = null;
         let currentLevel = '';
         let score = 0;
+        let lives = 3;
         let answeredQuestions = new Set();
         let flowStepsClicked = { acp: new Set(), ap2: new Set() };
         let acpFinalAnswered = 0;
+        let detectiveEvidenceExamined = new Set();
+        let detectiveVerdictSubmitted = false;
 
         const trackConfig = {
             acp: {
@@ -2089,15 +2429,77 @@
         function startGame() {
             currentTrack = 'acp';
             score = 0;
+            lives = 3;
             answeredQuestions.clear();
             flowStepsClicked = { acp: new Set(), ap2: new Set() };
             acpFinalAnswered = 0;
+            detectiveEvidenceExamined.clear();
+            detectiveVerdictSubmitted = false;
+
+            // Reset hearts UI
+            updateLivesDisplay();
 
             document.getElementById('welcomeScreen').classList.remove('active');
             document.getElementById('progressContainer').style.display = 'block';
 
             setupProgressDots();
             goToLevel('acp1');
+        }
+
+        // Update hearts display
+        function updateLivesDisplay() {
+            for (let i = 1; i <= 3; i++) {
+                const heart = document.getElementById('heart' + i);
+                if (heart) {
+                    heart.classList.remove('lost', 'losing');
+                    if (i > lives) {
+                        heart.classList.add('lost');
+                    }
+                }
+            }
+        }
+
+        // Lose a life with animation
+        function loseLife() {
+            if (lives > 0) {
+                const heart = document.getElementById('heart' + lives);
+                if (heart) {
+                    heart.classList.add('losing');
+                    setTimeout(() => {
+                        heart.classList.remove('losing');
+                        heart.classList.add('lost');
+                    }, 500);
+                }
+                lives--;
+
+                if (lives === 0) {
+                    setTimeout(() => showGameOver(), 600);
+                }
+            }
+        }
+
+        // Show game over screen
+        function showGameOver() {
+            const overlay = document.createElement('div');
+            overlay.className = 'game-over-overlay';
+            overlay.id = 'gameOverOverlay';
+            overlay.innerHTML = `
+                <div class="game-over-content">
+                    <div style="font-size: 4rem; margin-bottom: 20px;">💔</div>
+                    <h2>Game Over</h2>
+                    <p>You've run out of lives! But don't worry, every expert was once a beginner.</p>
+                    <p style="margin-bottom: 20px;">Final Score: <strong style="color: var(--secondary);">${score}</strong></p>
+                    <button class="btn btn-primary" onclick="restartGame()">Try Again</button>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+        }
+
+        // Restart game from game over
+        function restartGame() {
+            const overlay = document.getElementById('gameOverOverlay');
+            if (overlay) overlay.remove();
+            goToWelcome();
         }
 
         // Legacy function for backwards compatibility
@@ -2119,7 +2521,11 @@
         // Start Level 2 (AP2)
         function startLevel2() {
             currentTrack = 'ap2';
-            // Don't reset score - keep it cumulative
+            // Don't reset score or lives - keep them cumulative
+
+            // Reset detective simulation state for fresh start
+            detectiveEvidenceExamined.clear();
+            detectiveVerdictSubmitted = false;
 
             document.querySelectorAll('.game-screen').forEach(s => s.classList.remove('active'));
             document.getElementById('progressContainer').style.display = 'block';
@@ -2183,8 +2589,12 @@
             currentTrack = null;
             currentLevel = '';
             score = 0;
+            lives = 3;
             answeredQuestions.clear();
+            detectiveEvidenceExamined.clear();
+            detectiveVerdictSubmitted = false;
             document.getElementById('scoreDisplay').textContent = '0';
+            updateLivesDisplay();
 
             // Reset all UI
             resetAllUI();
@@ -2222,10 +2632,58 @@
 
             // Reset flow info boxes
             document.getElementById('acpFlowInfo').innerHTML = '<p>👆 Click each step to understand the data flow at each stage.</p>';
-            document.getElementById('ap2FlowInfo').innerHTML = '<p>👆 Click each step to see how the audit trail works at each stage.</p>';
+
+            // Reset detective simulation
+            resetDetectiveSimulation();
 
             // Reset next buttons
             document.querySelectorAll('[id$="Next"]').forEach(btn => btn.disabled = true);
+        }
+
+        // Reset detective simulation to initial state
+        function resetDetectiveSimulation() {
+            detectiveEvidenceExamined.clear();
+            detectiveVerdictSubmitted = false;
+
+            // Reset tabs
+            document.querySelectorAll('.evidence-tab').forEach(tab => {
+                tab.classList.remove('active', 'examined');
+            });
+            const intentTab = document.querySelector('.evidence-tab');
+            if (intentTab) intentTab.classList.add('active');
+
+            // Reset evidence content to initial state
+            const evidenceText = document.getElementById('evidenceText');
+            if (evidenceText) {
+                evidenceText.innerHTML = `{
+  <span class="json-key">"type"</span>: <span class="json-string">"IntentMandate"</span>,
+  <span class="json-key">"user_id"</span>: <span class="json-string">"user_8x7k2m"</span>,
+  <span class="json-key">"intent"</span>: <span class="json-string">"Purchase laptop"</span>,
+  <span class="json-key">"max_amount"</span>: <span class="json-number">50000</span>,
+  <span class="json-key">"currency"</span>: <span class="json-string">"usd"</span>,
+  <span class="json-key">"user_signature"</span>: <span class="json-string">"eyJhbGc..."</span>,
+  <span class="json-key">"signed_at"</span>: <span class="json-number">1751587200</span>
+}
+
+<span class="signature-valid">✓ Signature verified - max_amount: $500</span>`;
+            }
+
+            // Reset verdict buttons
+            document.querySelectorAll('.verdict-btn').forEach(btn => {
+                btn.classList.remove('correct', 'incorrect');
+                btn.disabled = false;
+            });
+
+            // Hide result
+            const result = document.getElementById('detectiveResult');
+            if (result) result.classList.remove('show');
+
+            // Reset status
+            const status = document.getElementById('detectiveSimStatus');
+            if (status) {
+                status.textContent = 'Investigating';
+                status.classList.remove('success');
+            }
         }
 
         function goToLevel(levelId) {
@@ -2292,6 +2750,7 @@
                 element.parentElement.querySelectorAll('.quiz-option').forEach(opt => {
                     if (opt.onclick && opt.onclick.toString().includes('true')) opt.classList.add('correct');
                 });
+                loseLife();
             }
 
             const nextBtn = document.getElementById(levelId + 'Next');
@@ -2370,11 +2829,12 @@
             } else {
                 const clickedBtn = event.target;
                 clickedBtn.classList.add('wrong');
+                clickedBtn.disabled = true;
                 const errorMsg = action === 'wrong1'
                     ? '❌ Agents should never request PaymentMethod IDs directly. SPTs avoid credential exposure to the agent layer.'
                     : '❌ Creating a PaymentIntent would make the agent the payment processor. ACP keeps the merchant as merchant of record.';
                 addChatMessage('acpChatContainer', 'system', errorMsg);
-                setTimeout(() => clickedBtn.classList.remove('wrong'), 1000);
+                loseLife();
             }
         }
 
@@ -2442,6 +2902,8 @@
                 score += 10;
                 document.getElementById('scoreDisplay').textContent = score;
                 showConfetti();
+            } else {
+                loseLife();
             }
 
             acpFinalAnswered++;
@@ -2506,6 +2968,8 @@
                 score += 10;
                 document.getElementById('scoreDisplay').textContent = score;
                 showConfetti();
+            } else {
+                loseLife();
             }
 
             ap2FinalAnswered++;
@@ -2556,6 +3020,112 @@
                 dot.classList.remove('current');
             });
             document.getElementById('progressFill').style.width = '100%';
+        }
+
+        // Detective Simulation - Evidence Data
+        const detectiveEvidence = {
+            intent: {
+                content: `{
+  <span class="json-key">"type"</span>: <span class="json-string">"IntentMandate"</span>,
+  <span class="json-key">"user_id"</span>: <span class="json-string">"user_8x7k2m"</span>,
+  <span class="json-key">"intent"</span>: <span class="json-string">"Purchase laptop"</span>,
+  <span class="json-key">"max_amount"</span>: <span class="json-number">50000</span>,
+  <span class="json-key">"currency"</span>: <span class="json-string">"usd"</span>,
+  <span class="json-key">"user_signature"</span>: <span class="json-string">"eyJhbGc..."</span>,
+  <span class="json-key">"signed_at"</span>: <span class="json-number">1751587200</span>
+}
+
+<span class="signature-valid">✓ Signature verified - max_amount: $500</span>`
+            },
+            cart: {
+                content: `{
+  <span class="json-key">"type"</span>: <span class="json-string">"CartMandate"</span>,
+  <span class="json-key">"user_id"</span>: <span class="json-string">"user_8x7k2m"</span>,
+  <span class="json-key">"items"</span>: [{
+    <span class="json-key">"name"</span>: <span class="json-string">"Laptop Model X"</span>,
+    <span class="json-key">"price"</span>: <span class="json-number">30000</span>,
+    <span class="json-key">"merchant"</span>: <span class="json-string">"electronics_store_99"</span>
+  }],
+  <span class="json-key">"total"</span>: <span class="json-number">30000</span>,
+  <span class="json-key">"user_signature"</span>: <span class="json-string">"eyJhbGc..."</span>,
+  <span class="json-key">"signed_at"</span>: <span class="json-number">1751587350</span>
+}
+
+<span class="signature-valid">✓ Signature verified - total: $300</span>
+<span style="color: var(--gray);">Note: User explicitly approved $300 for this specific item</span>`
+            },
+            payment: {
+                content: `{
+  <span class="json-key">"type"</span>: <span class="json-string">"PaymentRecord"</span>,
+  <span class="json-key">"transaction_id"</span>: <span class="json-string">"txn_7x9kLm2p"</span>,
+  <span class="json-key">"amount_charged"</span>: <span class="json-number">50000</span>,
+  <span class="json-key">"merchant_id"</span>: <span class="json-string">"electronics_store_99"</span>,
+  <span class="json-key">"cart_mandate_ref"</span>: <span class="json-string">"cm_8x7k2m_1751587350"</span>,
+  <span class="json-key">"processed_at"</span>: <span class="json-number">1751587400</span>
+}
+
+<span class="signature-invalid">⚠ DISCREPANCY DETECTED:</span>
+<span class="signature-invalid">Cart Mandate shows: $300</span>
+<span class="signature-invalid">Amount charged: $500</span>
+<span style="color: var(--gray);">Merchant charged $200 more than the signed Cart Mandate</span>`
+            }
+        };
+
+        // Show evidence in the detective simulation
+        function showEvidence(type) {
+            // Update tabs
+            document.querySelectorAll('.evidence-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            event.target.classList.add('examined');
+
+            // Track examined evidence
+            detectiveEvidenceExamined.add(type);
+
+            // Update content
+            const evidenceText = document.getElementById('evidenceText');
+            evidenceText.innerHTML = detectiveEvidence[type].content;
+        }
+
+        // Submit verdict in detective simulation
+        function submitVerdict(verdict) {
+            if (detectiveVerdictSubmitted) return;
+            detectiveVerdictSubmitted = true;
+
+            const buttons = document.querySelectorAll('.verdict-btn');
+            buttons.forEach(btn => btn.disabled = true);
+
+            const resultDiv = document.getElementById('detectiveResult');
+            const resultText = document.getElementById('detectiveResultText');
+            const statusEl = document.getElementById('detectiveSimStatus');
+
+            // The correct answer is "user" - the Cart Mandate clearly shows $300 was approved
+            if (verdict === 'user') {
+                // Correct!
+                event.target.classList.add('correct');
+                resultText.innerHTML = `<strong>Correct!</strong> The cryptographic evidence is clear: the user's signed Cart Mandate shows $300, but the merchant charged $500. The merchant cannot produce any signed mandate authorizing the additional $200. In AP2's model, the signed mandate chain is definitive—the merchant must refund the difference.`;
+                score += 15;
+                document.getElementById('scoreDisplay').textContent = score;
+                showConfetti();
+                statusEl.textContent = 'Solved!';
+                statusEl.classList.add('success');
+            } else {
+                // Incorrect
+                event.target.classList.add('incorrect');
+                // Highlight correct answer
+                buttons.forEach(btn => {
+                    if (btn.onclick.toString().includes("'user'")) {
+                        btn.classList.add('correct');
+                    }
+                });
+                resultText.innerHTML = `<strong>Not quite.</strong> The Cart Mandate—signed by the user—shows $300. The merchant charged $500 but has no signed mandate for that amount. In AP2, cryptographic signatures are definitive proof. The user wins this dispute because they have signed evidence of what they approved.`;
+                loseLife();
+                statusEl.textContent = 'Case Closed';
+            }
+
+            resultDiv.classList.add('show');
+            document.getElementById('ap24Next').disabled = false;
         }
     </script>
 </body>
