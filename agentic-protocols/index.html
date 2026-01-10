@@ -94,13 +94,13 @@
             width: 100%;
             height: 100%;
             pointer-events: none;
-            z-index: -1;
+            z-index: 0;
             overflow: hidden;
         }
 
         .spaceship {
             position: absolute;
-            opacity: 0.15;
+            opacity: 0.25;
             animation: flyAcross linear infinite;
         }
 
@@ -302,8 +302,6 @@
             margin: 0 auto 20px;
             animation: logoFloat 3s ease-in-out infinite;
             position: relative;
-            overflow: hidden;
-            border-radius: 20px;
         }
 
         .welcome-logo img {
@@ -312,7 +310,24 @@
             object-fit: contain;
         }
 
-        .welcome-logo::after {
+        .welcome-logo-shimmer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            -webkit-mask-image: url('agent-logo.png');
+            mask-image: url('agent-logo.png');
+            -webkit-mask-size: contain;
+            mask-size: contain;
+            -webkit-mask-repeat: no-repeat;
+            mask-repeat: no-repeat;
+            -webkit-mask-position: center;
+            mask-position: center;
+        }
+
+        .welcome-logo-shimmer::after {
             content: '';
             position: absolute;
             top: -50%;
@@ -323,7 +338,7 @@
                 to right,
                 transparent 0%,
                 transparent 35%,
-                rgba(255, 255, 255, 0.4) 50%,
+                rgba(255, 255, 255, 0.5) 50%,
                 transparent 65%,
                 transparent 100%
             );
@@ -1244,6 +1259,7 @@
             <div class="welcome-content">
                 <div class="welcome-logo">
                     <img src="agent-logo.png" alt="Logo">
+                    <div class="welcome-logo-shimmer"></div>
                 </div>
                 <p>Two major agentic commerce protocols are emerging with the promise to enable secure, agent-initiated payments. Complete both levels to learn their fundamentals:</p>
 
