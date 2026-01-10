@@ -373,7 +373,7 @@
 
         .welcome-content {
             text-align: center;
-            padding: 10px 20px 30px 20px;
+            padding: 10px 20px 10px 20px;
         }
 
         .welcome-logo {
@@ -1573,25 +1573,24 @@
         </div>
 
         <!-- Welcome Screen -->
-        <div class="game-screen active" id="welcomeScreen">
+        <div class="game-screen active" id="welcomeScreen" style="position: relative;">
+            <div class="stats-row" style="position: absolute; top: 15px; right: 15px;">
+                <div class="lives-container">
+                    <span class="heart">❤️</span>
+                    <span class="heart">❤️</span>
+                    <span class="heart">❤️</span>
+                </div>
+                <div class="score">
+                    <span>⭐</span>
+                    <span>0</span>
+                </div>
+            </div>
             <div class="welcome-content">
                 <div class="welcome-logo">
                     <img src="agent-logo.png" alt="Logo">
                     <div class="welcome-logo-shimmer"></div>
                 </div>
                 <p>Two major agentic commerce protocols are emerging with the promise to enable secure, agent-initiated payments. Your mission: protocol mastery.</p>
-
-                <div class="stats-row" style="margin: 20px 0;">
-                    <div class="lives-container">
-                        <span class="heart">❤️</span>
-                        <span class="heart">❤️</span>
-                        <span class="heart">❤️</span>
-                    </div>
-                    <div class="score">
-                        <span>⭐</span>
-                        <span>0</span>
-                    </div>
-                </div>
 
                 <div class="track-selection">
                     <div class="track-card acp" onclick="startGame()">
