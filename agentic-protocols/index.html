@@ -1621,6 +1621,69 @@
             font-weight: 600;
         }
 
+        /* Sarah's typing animation for AP2 Mission 1 */
+        .sarah-chat-container {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .sarah-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .sarah-input-wrapper {
+            flex: 1;
+            position: relative;
+        }
+
+        .sarah-input-box {
+            background: var(--dark);
+            border: 2px solid var(--google-blue);
+            border-radius: 20px;
+            padding: 12px 18px;
+            font-family: inherit;
+            font-size: 1rem;
+            color: white;
+            min-height: 24px;
+            position: relative;
+        }
+
+        .sarah-input-box .typing-text {
+            display: inline;
+        }
+
+        .sarah-input-box .cursor {
+            display: inline-block;
+            width: 2px;
+            height: 1.1em;
+            background: var(--google-blue);
+            margin-left: 2px;
+            vertical-align: text-bottom;
+            animation: blink 1s step-end infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .sarah-label {
+            font-size: 0.75rem;
+            color: var(--gray);
+            margin-top: 6px;
+            margin-left: 4px;
+        }
+
         .scenario-step {
             display: flex;
             gap: 15px;
@@ -2186,8 +2249,15 @@
             </div>
 
             <div class="example-scenario">
-                <div class="scenario-header">
-                    <span>📖</span> Example: Sarah asks her AI agent to "buy me running shoes under $150"
+                <!-- Sarah's typing animation -->
+                <div class="sarah-chat-container">
+                    <div class="sarah-avatar">👩</div>
+                    <div class="sarah-input-wrapper">
+                        <div class="sarah-input-box">
+                            <span class="typing-text" id="sarahTypingText"></span><span class="cursor" id="sarahCursor"></span>
+                        </div>
+                        <div class="sarah-label">Sarah → AI Agent</div>
+                    </div>
                 </div>
 
                 <div class="scenario-step-with-graphic">
@@ -2926,6 +2996,9 @@ spaceship.innerHTML = `<svg viewBox="0 0 32 24" fill="${color}">
             // Reset flip cards for Mission 1
             resetFlipCards();
 
+            // Reset Sarah's typing for AP2 Mission 1
+            resetSarahTyping();
+
             // Reset next buttons
             document.querySelectorAll('[id$="Next"]').forEach(btn => btn.disabled = true);
         }
@@ -2992,6 +3065,7 @@ spaceship.innerHTML = `<svg viewBox="0 0 32 24" fill="${color}">
             updateProgress();
 
             if (levelId === 'acp1') autoFlipPartyCards();
+            if (levelId === 'ap21') startSarahTyping();
             if (levelId === 'acp6') initAcpFinalQuiz();
             if (levelId === 'ap26') initAp2FinalQuiz();
 
@@ -3049,6 +3123,56 @@ spaceship.innerHTML = `<svg viewBox="0 0 32 24" fill="${color}">
                 const card = document.getElementById(`flipCard${i}`);
                 if (card) card.classList.remove('flipped');
             }
+        }
+
+        // Sarah's typing animation for AP2 Mission 1
+        let sarahTypingTimeout = null;
+        function startSarahTyping() {
+            const text = "buy me running shoes under $150";
+            const textElement = document.getElementById('sarahTypingText');
+            const cursorElement = document.getElementById('sarahCursor');
+
+            if (!textElement) return;
+
+            // Reset
+            textElement.textContent = '';
+            if (cursorElement) cursorElement.style.display = 'inline-block';
+
+            // Clear any existing timeout
+            if (sarahTypingTimeout) clearTimeout(sarahTypingTimeout);
+
+            let charIndex = 0;
+            const baseSpeed = 65; // ms per character
+
+            function typeNextChar() {
+                if (charIndex < text.length) {
+                    textElement.textContent += text[charIndex];
+                    charIndex++;
+
+                    // Vary speed slightly for natural feel
+                    const variance = Math.random() * 40 - 20;
+                    const delay = baseSpeed + variance;
+
+                    sarahTypingTimeout = setTimeout(typeNextChar, delay);
+                } else {
+                    // Typing complete - hide cursor after a moment
+                    setTimeout(() => {
+                        if (cursorElement) cursorElement.style.display = 'none';
+                    }, 1500);
+                }
+            }
+
+            // Start typing after 800ms delay
+            sarahTypingTimeout = setTimeout(typeNextChar, 800);
+        }
+
+        // Reset Sarah's typing for replay
+        function resetSarahTyping() {
+            if (sarahTypingTimeout) clearTimeout(sarahTypingTimeout);
+            const textElement = document.getElementById('sarahTypingText');
+            const cursorElement = document.getElementById('sarahCursor');
+            if (textElement) textElement.textContent = '';
+            if (cursorElement) cursorElement.style.display = 'inline-block';
         }
 
         function highlightCard(card) {
