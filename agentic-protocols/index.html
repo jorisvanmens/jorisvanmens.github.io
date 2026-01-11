@@ -661,6 +661,180 @@
             color: var(--gray);
         }
 
+        /* Flip Card Styles for Mission 1 */
+        .flip-card-container {
+            perspective: 1000px;
+            width: 200px;
+            height: 220px;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+
+        .flip-card-container.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 15px;
+        }
+
+        .flip-card-front {
+            background: linear-gradient(145deg, var(--dark), #1a1a2e);
+            border: 2px solid var(--primary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(99, 91, 255, 0.3);
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(99, 91, 255, 0.3); }
+            50% { box-shadow: 0 0 30px rgba(99, 91, 255, 0.6); }
+        }
+
+        .flip-card-container.flipped .flip-card-front {
+            animation: none;
+        }
+
+        .flip-card-front:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 35px rgba(99, 91, 255, 0.5);
+        }
+
+        .flip-card-front .mystery-icon {
+            font-size: 4rem;
+            margin-bottom: 15px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .flip-card-front .flip-hint {
+            font-size: 0.9rem;
+            color: var(--gray);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .flip-card-back {
+            background: var(--dark);
+            border: 2px solid var(--secondary);
+            transform: rotateY(180deg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 0 25px rgba(0, 212, 170, 0.3);
+        }
+
+        .flip-card-back .party-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .flip-card-back h3 {
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+            color: white;
+        }
+
+        .flip-card-back p {
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+
+        .flip-progress {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(99, 91, 255, 0.1);
+            border-radius: 10px;
+            border: 1px solid rgba(99, 91, 255, 0.3);
+        }
+
+        .flip-progress-text {
+            color: var(--gray);
+            font-size: 0.95rem;
+            margin-bottom: 10px;
+        }
+
+        .flip-progress-dots {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .flip-progress-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--dark);
+            border: 2px solid var(--primary);
+            transition: all 0.3s ease;
+        }
+
+        .flip-progress-dot.revealed {
+            background: var(--secondary);
+            border-color: var(--secondary);
+            box-shadow: 0 0 10px rgba(0, 212, 170, 0.5);
+        }
+
+        .mission1-content {
+            opacity: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.5s ease;
+        }
+
+        .mission1-content.revealed {
+            opacity: 1;
+            max-height: 1000px;
+        }
+
+        .all-revealed-message {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(145deg, rgba(0, 212, 170, 0.1), rgba(99, 91, 255, 0.1));
+            border-radius: 15px;
+            margin: 20px 0;
+            border: 1px solid var(--secondary);
+            animation: fadeInUp 0.5s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .all-revealed-message h3 {
+            color: var(--secondary);
+            margin-bottom: 10px;
+        }
+
         .flow-container {
             display: flex;
             align-items: center;
@@ -1622,6 +1796,7 @@
             .game-screen { padding: 20px; }
             .three-parties { flex-direction: column; }
             .party-card { width: 100%; }
+            .flip-card-container { width: 100%; max-width: 280px; }
             .flow-container { flex-direction: column; }
             .flow-arrow { transform: rotate(90deg); }
             .token-visual { flex-direction: column; }
@@ -1737,47 +1912,92 @@
             <div class="level-header">
                 <span class="level-badge">Level 1: ACP • Mission 1 of 6</span>
                 <h2>The Three-Party Model</h2>
-                <p>Understanding the separation of concerns in ACP</p>
+                <p>Discover the three key players in ACP transactions</p>
+            </div>
+
+            <!-- Progress indicator -->
+            <div class="flip-progress">
+                <p class="flip-progress-text">Tap each card to reveal the three parties</p>
+                <div class="flip-progress-dots">
+                    <div class="flip-progress-dot" id="flipDot0"></div>
+                    <div class="flip-progress-dot" id="flipDot1"></div>
+                    <div class="flip-progress-dot" id="flipDot2"></div>
+                </div>
             </div>
 
             <div class="diagram-container">
                 <div class="three-parties">
-                    <div class="party-card" onclick="selectParty(this)">
-                        <div class="party-icon">👤</div>
-                        <h3>Buyer</h3>
-                        <p>Authorizes payments, owns the customer relationship with the merchant</p>
+                    <!-- Flip Card 1: Buyer -->
+                    <div class="flip-card-container" id="flipCard0" onclick="flipPartyCard(0)">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <div class="mystery-icon">?</div>
+                                <span class="flip-hint">Tap to reveal</span>
+                            </div>
+                            <div class="flip-card-back">
+                                <div class="party-icon">👤</div>
+                                <h3>Buyer</h3>
+                                <p>Authorizes payments, owns the customer relationship with the merchant</p>
+                            </div>
+                        </div>
                     </div>
-                    <div class="party-card" onclick="selectParty(this)">
-                        <div class="party-icon">🤖</div>
-                        <h3>AI Agent</h3>
-                        <p>Facilitates discovery and checkout orchestration</p>
+                    <!-- Flip Card 2: AI Agent -->
+                    <div class="flip-card-container" id="flipCard1" onclick="flipPartyCard(1)">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <div class="mystery-icon">?</div>
+                                <span class="flip-hint">Tap to reveal</span>
+                            </div>
+                            <div class="flip-card-back">
+                                <div class="party-icon">🤖</div>
+                                <h3>AI Agent</h3>
+                                <p>Facilitates discovery and checkout orchestration</p>
+                            </div>
+                        </div>
                     </div>
-                    <div class="party-card" onclick="selectParty(this)">
-                        <div class="party-icon">🏪</div>
-                        <h3>Business</h3>
-                        <p>Merchant of record, processes payments, fulfills orders</p>
+                    <!-- Flip Card 3: Business -->
+                    <div class="flip-card-container" id="flipCard2" onclick="flipPartyCard(2)">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <div class="mystery-icon">?</div>
+                                <span class="flip-hint">Tap to reveal</span>
+                            </div>
+                            <div class="flip-card-back">
+                                <div class="party-icon">🏪</div>
+                                <h3>Business</h3>
+                                <p>Merchant of record, processes payments, fulfills orders</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="info-box">
-                <p>💡 <strong>Key architecture decision:</strong> The AI Agent never becomes the merchant of record. This preserves existing merchant-customer relationships and ensures chargebacks flow to the actual seller—not the AI platform.</p>
-            </div>
+            <!-- Hidden content revealed after all cards flipped -->
+            <div class="mission1-content" id="mission1Content">
+                <div class="all-revealed-message">
+                    <h3>All parties revealed!</h3>
+                    <p>Now you understand the three-party model. Let's see if you've got it...</p>
+                </div>
 
-            <div class="quiz-container">
-                <p class="quiz-question">A customer disputes a charge made through an AI agent. Under ACP's model, who handles the chargeback?</p>
-                <div class="quiz-options">
-                    <div class="quiz-option" onclick="checkAnswer(this, false, 'acp1')">
-                        <span class="option-letter">A</span>
-                        <span class="option-text">The AI Agent platform (e.g., OpenAI) since they facilitated the transaction</span>
-                    </div>
-                    <div class="quiz-option" onclick="checkAnswer(this, false, 'acp1')">
-                        <span class="option-letter">B</span>
-                        <span class="option-text">Stripe, as the payment processor handling the SPT</span>
-                    </div>
-                    <div class="quiz-option" onclick="checkAnswer(this, true, 'acp1')">
-                        <span class="option-letter">C</span>
-                        <span class="option-text">The Business, as they remain the merchant of record</span>
+                <div class="info-box">
+                    <p>💡 <strong>Key architecture decision:</strong> The AI Agent never becomes the merchant of record. This preserves existing merchant-customer relationships and ensures chargebacks flow to the actual seller—not the AI platform.</p>
+                </div>
+
+                <div class="quiz-container">
+                    <p class="quiz-question">A customer disputes a charge made through an AI agent. Under ACP's model, who handles the chargeback?</p>
+                    <div class="quiz-options">
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 'acp1')">
+                            <span class="option-letter">A</span>
+                            <span class="option-text">The AI Agent platform (e.g., OpenAI) since they facilitated the transaction</span>
+                        </div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 'acp1')">
+                            <span class="option-letter">B</span>
+                            <span class="option-text">Stripe, as the payment processor handling the SPT</span>
+                        </div>
+                        <div class="quiz-option" onclick="checkAnswer(this, true, 'acp1')">
+                            <span class="option-letter">C</span>
+                            <span class="option-text">The Business, as they remain the merchant of record</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -2482,6 +2702,7 @@
         let acpFinalAnswered = 0;
         let detectiveEvidenceExamined = new Set();
         let detectiveVerdictSubmitted = false;
+        let flippedCards = new Set();
 
         const trackConfig = {
             acp: {
@@ -2805,6 +3026,9 @@ spaceship.innerHTML = `<svg viewBox="0 0 32 24" fill="${color}">
             // Reset detective simulation
             resetDetectiveSimulation();
 
+            // Reset flip cards for Mission 1
+            resetFlipCards();
+
             // Reset next buttons
             document.querySelectorAll('[id$="Next"]').forEach(btn => btn.disabled = true);
         }
@@ -2901,6 +3125,54 @@ spaceship.innerHTML = `<svg viewBox="0 0 32 24" fill="${color}">
         function selectParty(card) {
             card.classList.add('selected');
             setTimeout(() => card.classList.remove('selected'), 500);
+        }
+
+        // Flip card mechanic for Mission 1
+        function flipPartyCard(index) {
+            const card = document.getElementById(`flipCard${index}`);
+            if (flippedCards.has(index)) return; // Already flipped
+
+            // Flip the card
+            card.classList.add('flipped');
+            flippedCards.add(index);
+
+            // Update progress dot
+            document.getElementById(`flipDot${index}`).classList.add('revealed');
+
+            // Check if all cards are flipped
+            if (flippedCards.size === 3) {
+                setTimeout(() => {
+                    // Show the hidden content with animation
+                    document.getElementById('mission1Content').classList.add('revealed');
+
+                    // Update progress text
+                    document.querySelector('.flip-progress-text').textContent = 'All parties discovered!';
+
+                    // Show mini confetti celebration
+                    showConfetti();
+
+                    // Scroll to reveal the content smoothly
+                    document.getElementById('mission1Content').scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+                }, 400);
+            }
+        }
+
+        // Reset flip cards when returning to Mission 1 (for replay)
+        function resetFlipCards() {
+            flippedCards.clear();
+            for (let i = 0; i < 3; i++) {
+                const card = document.getElementById(`flipCard${i}`);
+                const dot = document.getElementById(`flipDot${i}`);
+                if (card) card.classList.remove('flipped');
+                if (dot) dot.classList.remove('revealed');
+            }
+            const content = document.getElementById('mission1Content');
+            if (content) content.classList.remove('revealed');
+            const progressText = document.querySelector('.flip-progress-text');
+            if (progressText) progressText.textContent = 'Tap each card to reveal the three parties';
         }
 
         function highlightCard(card) {
