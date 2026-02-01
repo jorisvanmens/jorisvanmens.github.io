@@ -27,6 +27,12 @@
             --accent: #ff6b6b;
             --google-blue: #4285f4;
             --google-green: #34a853;
+            --visa-blue: #1a1f71;
+            --visa-gold: #f7b600;
+            --mastercard-red: #eb001b;
+            --mastercard-orange: #ff5f00;
+            --mastercard-yellow: #f79e1b;
+            --ucp-teal: #00bcd4;
             --dark: #1a1a2e;
             --darker: #0f0f1a;
             --light: #f0f0f7;
@@ -206,6 +212,21 @@
             color: var(--google-blue);
         }
 
+        .track-indicator.tap {
+            background: rgba(26, 31, 113, 0.2);
+            color: var(--visa-blue);
+        }
+
+        .track-indicator.map {
+            background: rgba(235, 0, 27, 0.2);
+            color: var(--mastercard-red);
+        }
+
+        .track-indicator.ucp {
+            background: rgba(0, 188, 212, 0.2);
+            color: var(--ucp-teal);
+        }
+
         .score {
             display: flex;
             align-items: center;
@@ -303,6 +324,18 @@
             background: linear-gradient(90deg, var(--google-blue), var(--google-green));
         }
 
+        .progress-fill.tap {
+            background: linear-gradient(90deg, var(--visa-blue), var(--visa-gold));
+        }
+
+        .progress-fill.map {
+            background: linear-gradient(90deg, var(--mastercard-red), var(--mastercard-yellow));
+        }
+
+        .progress-fill.ucp {
+            background: linear-gradient(90deg, var(--ucp-teal), var(--google-green));
+        }
+
         .level-dots {
             display: flex;
             justify-content: space-between;
@@ -328,6 +361,18 @@
             border-color: var(--google-blue);
         }
 
+        .level-dot.tap-dot {
+            border-color: var(--visa-blue);
+        }
+
+        .level-dot.map-dot {
+            border-color: var(--mastercard-red);
+        }
+
+        .level-dot.ucp-dot {
+            border-color: var(--ucp-teal);
+        }
+
         .level-dot.completed {
             background: var(--secondary);
             border-color: var(--secondary);
@@ -346,6 +391,24 @@
             background: var(--google-blue);
             border-color: var(--google-blue);
             box-shadow: 0 0 20px rgba(66, 133, 244, 0.5);
+        }
+
+        .level-dot.current.tap-dot {
+            background: var(--visa-blue);
+            border-color: var(--visa-blue);
+            box-shadow: 0 0 20px rgba(26, 31, 113, 0.5);
+        }
+
+        .level-dot.current.map-dot {
+            background: var(--mastercard-red);
+            border-color: var(--mastercard-red);
+            box-shadow: 0 0 20px rgba(235, 0, 27, 0.5);
+        }
+
+        .level-dot.current.ucp-dot {
+            background: var(--ucp-teal);
+            border-color: var(--ucp-teal);
+            box-shadow: 0 0 20px rgba(0, 188, 212, 0.5);
         }
 
         @keyframes glow {
@@ -491,6 +554,33 @@
             box-shadow: 0 10px 30px rgba(66, 133, 244, 0.2);
         }
 
+        .track-card.tap {
+            border-color: rgba(26, 31, 113, 0.3);
+        }
+
+        .track-card.tap:hover {
+            border-color: var(--visa-blue);
+            box-shadow: 0 10px 30px rgba(26, 31, 113, 0.2);
+        }
+
+        .track-card.map {
+            border-color: rgba(235, 0, 27, 0.3);
+        }
+
+        .track-card.map:hover {
+            border-color: var(--mastercard-red);
+            box-shadow: 0 10px 30px rgba(235, 0, 27, 0.2);
+        }
+
+        .track-card.ucp {
+            border-color: rgba(0, 188, 212, 0.3);
+        }
+
+        .track-card.ucp:hover {
+            border-color: var(--ucp-teal);
+            box-shadow: 0 10px 30px rgba(0, 188, 212, 0.2);
+        }
+
         .track-card h3 {
             font-size: 1.3rem;
             margin-bottom: 5px;
@@ -565,6 +655,39 @@
             box-shadow: 0 6px 30px rgba(66, 133, 244, 0.6);
         }
 
+        .btn-visa {
+            background: linear-gradient(135deg, var(--visa-blue), #2d347a);
+            color: white;
+            box-shadow: 0 4px 20px rgba(26, 31, 113, 0.4);
+        }
+
+        .btn-visa:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 30px rgba(26, 31, 113, 0.6);
+        }
+
+        .btn-mastercard {
+            background: linear-gradient(135deg, var(--mastercard-red), var(--mastercard-orange));
+            color: white;
+            box-shadow: 0 4px 20px rgba(235, 0, 27, 0.4);
+        }
+
+        .btn-mastercard:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 30px rgba(235, 0, 27, 0.6);
+        }
+
+        .btn-ucp {
+            background: linear-gradient(135deg, var(--ucp-teal), #00838f);
+            color: white;
+            box-shadow: 0 4px 20px rgba(0, 188, 212, 0.4);
+        }
+
+        .btn-ucp:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 30px rgba(0, 188, 212, 0.6);
+        }
+
         .btn-secondary {
             background: transparent;
             color: var(--primary);
@@ -599,6 +722,21 @@
         .level-badge.ap2 {
             background: rgba(66, 133, 244, 0.2);
             color: var(--google-blue);
+        }
+
+        .level-badge.tap {
+            background: rgba(26, 31, 113, 0.2);
+            color: var(--visa-blue);
+        }
+
+        .level-badge.map {
+            background: rgba(235, 0, 27, 0.2);
+            color: var(--mastercard-red);
+        }
+
+        .level-badge.ucp {
+            background: rgba(0, 188, 212, 0.2);
+            color: var(--ucp-teal);
         }
 
         .level-header h2 {
@@ -1593,6 +1731,21 @@
             border-left-color: var(--google-blue);
         }
 
+        .info-box.tap {
+            background: rgba(26, 31, 113, 0.1);
+            border-left-color: var(--visa-blue);
+        }
+
+        .info-box.map {
+            background: rgba(235, 0, 27, 0.1);
+            border-left-color: var(--mastercard-red);
+        }
+
+        .info-box.ucp {
+            background: rgba(0, 188, 212, 0.1);
+            border-left-color: var(--ucp-teal);
+        }
+
         .info-box p {
             color: var(--light);
             font-size: 0.95rem;
@@ -1710,6 +1863,18 @@
             background: var(--google-blue);
         }
 
+        .step-number.tap {
+            background: var(--visa-blue);
+        }
+
+        .step-number.map {
+            background: var(--mastercard-red);
+        }
+
+        .step-number.ucp {
+            background: var(--ucp-teal);
+        }
+
         .step-content h4 {
             font-size: 0.95rem;
             margin-bottom: 5px;
@@ -1812,7 +1977,7 @@
     <div class="game-container">
         <header class="header">
             <h1>🤖 Agentic Payments Protocols: The Game</h1>
-            <p class="subtitle">A 5 minute introduction to ACP & AP2</p>
+            <p class="subtitle">Master the 5 protocols powering AI commerce</p>
         </header>
 
         <div class="progress-container" id="progressContainer" style="display: none;">
@@ -1854,9 +2019,9 @@
                     <img src="agent-logo.png" alt="Logo">
                     <div class="welcome-logo-shimmer"></div>
                 </div>
-                <p>To give AI agents the ability to make online payments, two (competing) agentic commerce protocols have recently emerged. Your mission: master the protocols.</p>
+                <p>Five protocols are competing to power AI agent commerce. Your mission: master them all.</p>
 
-                <div class="track-selection">
+                <div class="track-selection" style="max-width: 900px;">
                     <div class="track-card acp" onclick="startGame()">
                         <div style="font-size: 0.75rem; color: var(--secondary); margin-bottom: 8px; font-weight: 600;">LEVEL 1</div>
                         <h3>ACP</h3>
@@ -1876,13 +2041,40 @@
                         </div>
                         <div class="track-meta">6 missions</div>
                     </div>
+                    <div class="track-card tap" onclick="startTap()">
+                        <div style="font-size: 0.75rem; color: var(--visa-gold); margin-bottom: 8px; font-weight: 600;">LEVEL 3</div>
+                        <h3>TAP</h3>
+                        <div class="protocol-fullname">Trusted Agent Protocol</div>
+                        <div class="company-logos">
+                            <span style="font-size: 0.9rem; font-weight: bold; color: var(--visa-blue);">VISA</span>
+                        </div>
+                        <div class="track-meta">3 missions</div>
+                    </div>
+                    <div class="track-card map" onclick="startMap()">
+                        <div style="font-size: 0.75rem; color: var(--mastercard-yellow); margin-bottom: 8px; font-weight: 600;">LEVEL 4</div>
+                        <h3>MAP</h3>
+                        <div class="protocol-fullname">Mastercard Agent Pay</div>
+                        <div class="company-logos">
+                            <span style="font-size: 0.9rem; font-weight: bold; color: var(--mastercard-red);">MASTERCARD</span>
+                        </div>
+                        <div class="track-meta">3 missions</div>
+                    </div>
+                    <div class="track-card ucp" onclick="startUcp()">
+                        <div style="font-size: 0.75rem; color: var(--ucp-teal); margin-bottom: 8px; font-weight: 600;">LEVEL 5</div>
+                        <h3>UCP</h3>
+                        <div class="protocol-fullname">Universal Commerce Protocol</div>
+                        <div class="company-logos">
+                            <img src="google-logo-white.png" alt="Google">
+                        </div>
+                        <div class="track-meta">5 missions</div>
+                    </div>
                 </div>
 
                 <div style="margin-top: 30px;">
                     <button class="btn btn-primary" onclick="startGame()" style="font-size: 1.2rem; padding: 18px 50px;">
                         Start your mission →
                     </button>
-                    <p style="margin-top: 15px; font-size: 0.85rem; color: var(--gray);">12 missions total</p>
+                    <p style="margin-top: 15px; font-size: 0.85rem; color: var(--gray);">23 missions total</p>
                 </div>
             </div>
         </div>
@@ -2594,7 +2786,821 @@
 
             <div class="nav-buttons">
                 <button class="btn btn-secondary" onclick="goToLevel('ap24')">← Back</button>
-                <button class="btn btn-success" id="ap26Next" onclick="showFinalResults()" disabled>Complete Training 🎓</button>
+                <button class="btn btn-success" id="ap26Next" onclick="showAp2ToTapTransition()" disabled>Complete Level 2 →</button>
+            </div>
+        </div>
+
+        <!-- AP2 to TAP Transition Screen -->
+        <div class="game-screen" id="ap2ToTapTransitionScreen">
+            <div class="welcome-content">
+                <div style="font-size: 4rem; margin-bottom: 20px;">🎉</div>
+                <h2 style="background: linear-gradient(135deg, var(--google-blue), var(--google-green)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Level 2 Complete!</h2>
+                <p style="margin: 20px 0;">You've mastered AP2's mandate chains. Now let's explore Visa's TAP—cryptographic signatures for trusted agent verification.</p>
+
+                <div class="key-learnings" style="margin: 30px auto; max-width: 500px;">
+                    <h3>📚 AP2 Key Takeaways</h3>
+                    <ul>
+                        <li><span class="check-icon">✓</span><span><strong>Three Mandates:</strong> Intent → Cart → Payment chain</span></li>
+                        <li><span class="check-icon">✓</span><span><strong>VDCs:</strong> Tamper-evident signed credentials</span></li>
+                        <li><span class="check-icon">✓</span><span><strong>Audit Trail:</strong> Clear dispute resolution via signatures</span></li>
+                    </ul>
+                </div>
+
+                <div style="margin-top: 30px;">
+                    <button class="btn btn-visa" onclick="startTap()" style="font-size: 1.1rem; padding: 16px 40px;">
+                        Start Level 3: TAP →
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAP TRACK (Visa's Trusted Agent Protocol) -->
+
+        <!-- TAP Level 1: The Cryptographic Handshake -->
+        <div class="game-screen" id="tap1Screen">
+            <div class="level-header">
+                <span class="level-badge tap">Level 3: TAP • Mission 1 of 3</span>
+                <h2>The Cryptographic Handshake</h2>
+                <p>Understanding HTTP Message Signatures (RFC 9421)</p>
+            </div>
+
+            <div class="diagram-container">
+                <div class="three-parties">
+                    <div class="flip-card-container" id="tapFlipCard0">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front" style="border-color: var(--visa-blue);">
+                                <div class="mystery-icon">🔑</div>
+                            </div>
+                            <div class="flip-card-back" style="border-color: var(--visa-gold);">
+                                <div class="party-icon">🤖</div>
+                                <h3>Agent's Private Key</h3>
+                                <p>Signs every HTTP request to prove identity</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flip-card-container" id="tapFlipCard1">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front" style="border-color: var(--visa-blue);">
+                                <div class="mystery-icon">📋</div>
+                            </div>
+                            <div class="flip-card-back" style="border-color: var(--visa-gold);">
+                                <div class="party-icon">🏛️</div>
+                                <h3>Visa's Registry</h3>
+                                <p>Contains public keys of all trusted agents</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flip-card-container" id="tapFlipCard2">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front" style="border-color: var(--visa-blue);">
+                                <div class="mystery-icon">✓</div>
+                            </div>
+                            <div class="flip-card-back" style="border-color: var(--visa-gold);">
+                                <div class="party-icon">🏪</div>
+                                <h3>Merchant/CDN</h3>
+                                <p>Verifies signature using Visa's public keys</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box tap">
+                <p>💡 <strong>RFC 9421 in action:</strong> Every TAP request includes a cryptographic signature in the HTTP headers. The merchant or CDN verifies this signature against Visa's registry—only requests from registered agents pass through.</p>
+            </div>
+
+            <div class="quiz-container">
+                <p class="quiz-question">An agent sends a request to buy sneakers. The merchant receives it but the signature doesn't match any key in Visa's registry. What happens?</p>
+                <div class="quiz-options">
+                    <div class="quiz-option" onclick="checkAnswer(this, false, 'tap1')">
+                        <span class="option-letter">A</span>
+                        <span class="option-text">Transaction proceeds—the merchant can decide to trust anyway</span>
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(this, true, 'tap1')">
+                        <span class="option-letter">B</span>
+                        <span class="option-text">Request is rejected as untrusted—unverified agents are blocked</span>
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(this, false, 'tap1')">
+                        <span class="option-letter">C</span>
+                        <span class="option-text">Visa manually reviews and approves the transaction</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-buttons">
+                <button class="btn btn-secondary" onclick="goToWelcome()">← Back</button>
+                <button class="btn btn-visa" id="tap1Next" onclick="goToLevel('tap2')" disabled>Continue →</button>
+            </div>
+        </div>
+
+        <!-- TAP Level 2: The Three Pillars of TAP -->
+        <div class="game-screen" id="tap2Screen">
+            <div class="level-header">
+                <span class="level-badge tap">Level 3: TAP • Mission 2 of 3</span>
+                <h2>The Three Pillars of TAP</h2>
+                <p>Agent Intent, Consumer Recognition, and Payment Information</p>
+            </div>
+
+            <div class="diagram-container">
+                <div class="guardrail-cards">
+                    <div class="guardrail-card" onclick="highlightCard(this)" style="border-color: rgba(26, 31, 113, 0.3);">
+                        <h4>📋 Agent Intent</h4>
+                        <p>"I'm a Visa-trusted agent here to purchase this specific product." Declares the agent's purpose for visiting this page.</p>
+                    </div>
+                    <div class="guardrail-card" onclick="highlightCard(this)" style="border-color: rgba(26, 31, 113, 0.3);">
+                        <h4>👤 Consumer Recognition</h4>
+                        <p>Existing merchant tokens, device IDs, loyalty identifiers. Helps merchants recognize returning customers without exposing card numbers.</p>
+                    </div>
+                    <div class="guardrail-card" onclick="highlightCard(this)" style="border-color: rgba(26, 31, 113, 0.3);">
+                        <h4>💳 Payment Information</h4>
+                        <p>Hashed credentials, tokenized payment methods. Actual card numbers never touch the agent layer.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box tap">
+                <p>💡 <strong>Privacy by design:</strong> TAP sends hashed or tokenized identifiers—never raw card numbers or PII. The merchant knows "this is a returning customer" without knowing who specifically.</p>
+            </div>
+
+            <div class="quiz-container">
+                <p class="quiz-question">Sarah's agent visits a merchant she's shopped with before. Which TAP component helps the merchant recognize her without exposing her card number?</p>
+                <div class="quiz-options">
+                    <div class="quiz-option" onclick="checkAnswer(this, false, 'tap2')">
+                        <span class="option-letter">A</span>
+                        <span class="option-text">Agent Intent—it declares the agent's shopping purpose</span>
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(this, true, 'tap2')">
+                        <span class="option-letter">B</span>
+                        <span class="option-text">Consumer Recognition—merchant tokens and device IDs identify her</span>
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(this, false, 'tap2')">
+                        <span class="option-letter">C</span>
+                        <span class="option-text">Payment Information—hashed card credentials reveal identity</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-buttons">
+                <button class="btn btn-secondary" onclick="goToLevel('tap1')">← Back</button>
+                <button class="btn btn-visa" id="tap2Next" onclick="goToLevel('tap3')" disabled>Continue →</button>
+            </div>
+        </div>
+
+        <!-- TAP Level 3: The Consumer Control Loop -->
+        <div class="game-screen" id="tap3Screen">
+            <div class="level-header">
+                <span class="level-badge tap">Level 3: TAP • Mission 3 of 3</span>
+                <h2>The Consumer Control Loop</h2>
+                <p>Payment Instructions API and Payment Signals API</p>
+            </div>
+
+            <div class="example-scenario">
+                <div class="scenario-step-with-graphic">
+                    <div class="mandate-graphic" style="background: linear-gradient(135deg, var(--visa-blue), #2d347a);">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        </svg>
+                    </div>
+                    <div class="step-content">
+                        <h4 style="color: var(--visa-blue);">1. Payment Instructions API</h4>
+                        <p>Consumer sets rules: "Max $200, only electronics, only these merchants." These constraints are stored with Visa.</p>
+                    </div>
+                </div>
+
+                <div class="scenario-step-with-graphic">
+                    <div class="mandate-graphic" style="background: linear-gradient(135deg, var(--visa-gold), #d4a000);">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                    </div>
+                    <div class="step-content">
+                        <h4 style="color: var(--visa-gold);">2. Agent Attempts Purchase</h4>
+                        <p>Agent finds a product and sends a purchase signal to Visa's Payment Signals API with the transaction details.</p>
+                    </div>
+                </div>
+
+                <div class="scenario-step-with-graphic">
+                    <div class="mandate-graphic" style="background: linear-gradient(135deg, var(--secondary), #00b894);">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                    </div>
+                    <div class="step-content">
+                        <h4 style="color: var(--secondary);">3. Token Unlock (or Block)</h4>
+                        <p>Visa checks against consumer's instructions. If compliant, payment token is unlocked. If not, transaction is blocked.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box tap">
+                <p>💡 <strong>Human-in-the-loop:</strong> Even with autonomous agents, the consumer's pre-set rules act as guardrails. The token only unlocks when the purchase matches the consumer's instructions.</p>
+            </div>
+
+            <div class="quiz-container">
+                <p class="quiz-question">An agent tries to buy a $300 item when the consumer set a $200 limit in their Payment Instructions. What happens?</p>
+                <div class="quiz-options">
+                    <div class="quiz-option" onclick="checkAnswer(this, false, 'tap3')">
+                        <span class="option-letter">A</span>
+                        <span class="option-text">Transaction proceeds—the consumer is charged $300</span>
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(this, true, 'tap3')">
+                        <span class="option-letter">B</span>
+                        <span class="option-text">Payment Signals API blocks the token unlock—transaction fails</span>
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(this, false, 'tap3')">
+                        <span class="option-letter">C</span>
+                        <span class="option-text">Agent negotiates a lower price automatically</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-buttons">
+                <button class="btn btn-secondary" onclick="goToLevel('tap2')">← Back</button>
+                <button class="btn btn-success" id="tap3Next" onclick="showTapToMapTransition()" disabled>Complete Level 3 →</button>
+            </div>
+        </div>
+
+        <!-- TAP to MAP Transition Screen -->
+        <div class="game-screen" id="tapToMapTransitionScreen">
+            <div class="welcome-content">
+                <div style="font-size: 4rem; margin-bottom: 20px;">🎉</div>
+                <h2 style="background: linear-gradient(135deg, var(--visa-blue), var(--visa-gold)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Level 3 Complete!</h2>
+                <p style="margin: 20px 0;">You've mastered Visa's TAP. Now let's explore Mastercard's Agent Pay—Agentic Tokens and Know Your Agent verification.</p>
+
+                <div class="key-learnings" style="margin: 30px auto; max-width: 500px;">
+                    <h3>📚 TAP Key Takeaways</h3>
+                    <ul>
+                        <li><span class="check-icon">✓</span><span><strong>RFC 9421 Signatures:</strong> Cryptographic agent verification</span></li>
+                        <li><span class="check-icon">✓</span><span><strong>Three Pillars:</strong> Intent, Recognition, Payment</span></li>
+                        <li><span class="check-icon">✓</span><span><strong>Consumer Control:</strong> Pre-set rules gate token unlock</span></li>
+                    </ul>
+                </div>
+
+                <div style="margin-top: 30px;">
+                    <button class="btn btn-mastercard" onclick="startMap()" style="font-size: 1.1rem; padding: 16px 40px;">
+                        Start Level 4: MAP →
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAP TRACK (Mastercard Agent Pay) -->
+
+        <!-- MAP Level 1: Know Your Agent (KYA) -->
+        <div class="game-screen" id="map1Screen">
+            <div class="level-header">
+                <span class="level-badge map">Level 4: MAP • Mission 1 of 3</span>
+                <h2>Know Your Agent (KYA)</h2>
+                <p>Agent registration and verification before any transaction</p>
+            </div>
+
+            <div class="example-scenario">
+                <div class="scenario-step-with-graphic">
+                    <div class="mandate-graphic" style="background: linear-gradient(135deg, var(--mastercard-red), #c40017);">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                        </svg>
+                    </div>
+                    <div class="step-content">
+                        <h4 style="color: var(--mastercard-red);">1. Agent Submits for Review</h4>
+                        <p>Agent developer provides documentation about the agent's purpose, security practices, and intended use cases.</p>
+                    </div>
+                </div>
+
+                <div class="scenario-step-with-graphic">
+                    <div class="mandate-graphic" style="background: linear-gradient(135deg, var(--mastercard-orange), #e54e00);">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                            <polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                    </div>
+                    <div class="step-content">
+                        <h4 style="color: var(--mastercard-orange);">2. Mastercard Verifies Legitimacy</h4>
+                        <p>Review process checks agent's compliance, security standards, and business practices—similar to KYC for customers.</p>
+                    </div>
+                </div>
+
+                <div class="scenario-step-with-graphic">
+                    <div class="mandate-graphic" style="background: linear-gradient(135deg, var(--mastercard-yellow), #e69000);">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        </svg>
+                    </div>
+                    <div class="step-content">
+                        <h4 style="color: var(--mastercard-yellow);">3. Cryptographic Keys Issued</h4>
+                        <p>Approved agent receives cryptographic keys. Public key added to Mastercard's directory for verification.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box map">
+                <p>💡 <strong>KYA = KYC for AI:</strong> Just as banks verify customers before opening accounts, Mastercard verifies agents before they can transact. This creates accountability and traceability.</p>
+            </div>
+
+            <div class="quiz-container">
+                <p class="quiz-question">A new AI shopping assistant wants to make purchases using Mastercard. What's the first step?</p>
+                <div class="quiz-options">
+                    <div class="quiz-option" onclick="checkAnswer(this, false, 'map1')">
+                        <span class="option-letter">A</span>
+                        <span class="option-text">Start processing transactions immediately—verification happens later</span>
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(this, true, 'map1')">
+                        <span class="option-letter">B</span>
+                        <span class="option-text">Complete Know Your Agent verification with Mastercard</span>
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(this, false, 'map1')">
+                        <span class="option-letter">C</span>
+                        <span class="option-text">Ask users to share their card numbers directly</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-buttons">
+                <button class="btn btn-secondary" onclick="goToWelcome()">← Back</button>
+                <button class="btn btn-mastercard" id="map1Next" onclick="goToLevel('map2')" disabled>Continue →</button>
+            </div>
+        </div>
+
+        <!-- MAP Level 2: Agentic Tokens -->
+        <div class="game-screen" id="map2Screen">
+            <div class="level-header">
+                <span class="level-badge map">Level 4: MAP • Mission 2 of 3</span>
+                <h2>Agentic Tokens</h2>
+                <p>Dynamic, cryptographically secure payment credentials</p>
+            </div>
+
+            <div class="token-demo">
+                <p style="text-align: center; margin-bottom: 20px; color: var(--gray);">Traditional vs Agentic Token flow</p>
+                <div class="token-visual">
+                    <div class="card-display">
+                        <div class="card-number" style="color: var(--accent);">5412 •••• •••• 7890</div>
+                        <div class="card-label">Traditional: Card number exposed to agent (risky)</div>
+                    </div>
+                    <div class="transform-arrow" style="color: var(--mastercard-orange);">→</div>
+                    <div class="token-display" style="background: linear-gradient(135deg, var(--mastercard-red), var(--mastercard-orange));">
+                        <div class="token-icon">🔐</div>
+                        <div class="token-text">agt_mc_7x9kLm2p...</div>
+                        <div class="card-label" style="color: rgba(255,255,255,0.8)">Agentic Token: Secure, revocable, bound</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="diagram-container">
+                <div class="guardrail-cards">
+                    <div class="guardrail-card" onclick="highlightCard(this)" style="border-color: rgba(235, 0, 27, 0.3);">
+                        <h4>🔒 Cryptographically Bound</h4>
+                        <p>Token is bound to specific merchant, amount, and time window. Cannot be reused elsewhere.</p>
+                    </div>
+                    <div class="guardrail-card" onclick="highlightCard(this)" style="border-color: rgba(235, 0, 27, 0.3);">
+                        <h4>❌ Useless if Intercepted</h4>
+                        <p>Even if stolen, the token only works for its specific, pre-defined context.</p>
+                    </div>
+                    <div class="guardrail-card" onclick="highlightCard(this)" style="border-color: rgba(235, 0, 27, 0.3);">
+                        <h4>🔄 Instantly Revocable</h4>
+                        <p>Consumer or issuer can revoke the token at any time, immediately stopping all agent transactions.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box map">
+                <p>💡 <strong>Defense in depth:</strong> Agentic Tokens replace card numbers so agents never see real credentials. Even if compromised, the token's constraints limit damage.</p>
+            </div>
+
+            <div class="quiz-container">
+                <p class="quiz-question">A hacker intercepts an Agentic Token during transmission. What can they do with it?</p>
+                <div class="quiz-options">
+                    <div class="quiz-option" onclick="checkAnswer(this, false, 'map2')">
+                        <span class="option-letter">A</span>
+                        <span class="option-text">Use it at any merchant for any amount</span>
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(this, true, 'map2')">
+                        <span class="option-letter">B</span>
+                        <span class="option-text">Nothing—it's cryptographically bound and useless outside its context</span>
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(this, false, 'map2')">
+                        <span class="option-letter">C</span>
+                        <span class="option-text">Decode it to reveal the original card number</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-buttons">
+                <button class="btn btn-secondary" onclick="goToLevel('map1')">← Back</button>
+                <button class="btn btn-mastercard" id="map2Next" onclick="goToLevel('map3')" disabled>Continue →</button>
+            </div>
+        </div>
+
+        <!-- MAP Level 3: The Intent Verification Flow -->
+        <div class="game-screen" id="map3Screen">
+            <div class="level-header">
+                <span class="level-badge map">Level 4: MAP • Mission 3 of 3</span>
+                <h2>The Intent Verification Flow</h2>
+                <p>Biometric consent and the complete transaction lifecycle</p>
+            </div>
+
+            <div class="example-scenario">
+                <div class="scenario-step-with-graphic">
+                    <div class="mandate-graphic" style="background: linear-gradient(135deg, #4285f4, #2563eb);">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                    </div>
+                    <div class="step-content">
+                        <h4 style="color: #4285f4;">1. User Intent</h4>
+                        <p>"Buy these running shoes for $120" — User expresses what they want to purchase.</p>
+                    </div>
+                </div>
+
+                <div class="scenario-step-with-graphic">
+                    <div class="mandate-graphic" style="background: linear-gradient(135deg, var(--mastercard-red), #c40017);">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+                            <path d="M12 6v6l4 2"/>
+                            <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                    </div>
+                    <div class="step-content">
+                        <h4 style="color: var(--mastercard-red);">2. Biometric Verification</h4>
+                        <p>Mastercard Passkeys confirm identity via fingerprint or face ID. Creates verifiable credential.</p>
+                    </div>
+                </div>
+
+                <div class="scenario-step-with-graphic">
+                    <div class="mandate-graphic" style="background: linear-gradient(135deg, var(--mastercard-orange), #e54e00);">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                            <path d="M9 12l2 2 4-4"/>
+                            <rect x="3" y="3" width="18" height="18" rx="2"/>
+                        </svg>
+                    </div>
+                    <div class="step-content">
+                        <h4 style="color: var(--mastercard-orange);">3. Intent Capture</h4>
+                        <p>Amount ($120), merchant (Foot Locker), product (Nike shoes) locked into verifiable credential.</p>
+                    </div>
+                </div>
+
+                <div class="scenario-step-with-graphic">
+                    <div class="mandate-graphic" style="background: linear-gradient(135deg, var(--mastercard-yellow), #e69000);">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                            <polyline points="9 12 12 15 16 10"/>
+                        </svg>
+                    </div>
+                    <div class="step-content">
+                        <h4 style="color: var(--mastercard-yellow);">4. Agent Execution</h4>
+                        <p>Agent presents Agentic Token at checkout. Mastercard verifies token + intent match.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box map">
+                <p>💡 <strong>Intent = Authorization:</strong> The biometrically-verified intent becomes the authorization. If actual purchase differs from captured intent, transaction is rejected.</p>
+            </div>
+
+            <div class="quiz-container">
+                <p class="quiz-question">An agent captured intent for "Nike shoes, $120, Foot Locker" but submits a transaction for "Nike shoes, $180, Foot Locker". What happens?</p>
+                <div class="quiz-options">
+                    <div class="quiz-option" onclick="checkAnswer(this, false, 'map3')">
+                        <span class="option-letter">A</span>
+                        <span class="option-text">Transaction approved—same product and merchant</span>
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(this, true, 'map3')">
+                        <span class="option-letter">B</span>
+                        <span class="option-text">Transaction rejected—amount doesn't match verified intent</span>
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(this, false, 'map3')">
+                        <span class="option-letter">C</span>
+                        <span class="option-text">User is charged $120 and owes the remaining $60</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-buttons">
+                <button class="btn btn-secondary" onclick="goToLevel('map2')">← Back</button>
+                <button class="btn btn-success" id="map3Next" onclick="showMapToUcpTransition()" disabled>Complete Level 4 →</button>
+            </div>
+        </div>
+
+        <!-- MAP to UCP Transition Screen -->
+        <div class="game-screen" id="mapToUcpTransitionScreen">
+            <div class="welcome-content">
+                <div style="font-size: 4rem; margin-bottom: 20px;">🎉</div>
+                <h2 style="background: linear-gradient(135deg, var(--mastercard-red), var(--mastercard-yellow)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Level 4 Complete!</h2>
+                <p style="margin: 20px 0;">You've mastered Mastercard's Agent Pay. Final level: Google's UCP—a unified architecture for commerce interoperability.</p>
+
+                <div class="key-learnings" style="margin: 30px auto; max-width: 500px;">
+                    <h3>📚 MAP Key Takeaways</h3>
+                    <ul>
+                        <li><span class="check-icon">✓</span><span><strong>Know Your Agent:</strong> Verification before transaction</span></li>
+                        <li><span class="check-icon">✓</span><span><strong>Agentic Tokens:</strong> Bound, revocable credentials</span></li>
+                        <li><span class="check-icon">✓</span><span><strong>Intent Verification:</strong> Biometric consent flow</span></li>
+                    </ul>
+                </div>
+
+                <div style="margin-top: 30px;">
+                    <button class="btn btn-ucp" onclick="startUcp()" style="font-size: 1.1rem; padding: 16px 40px;">
+                        Start Level 5: UCP →
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- UCP TRACK (Google's Universal Commerce Protocol) -->
+
+        <!-- UCP Level 1: The Four-Layer Architecture -->
+        <div class="game-screen" id="ucp1Screen">
+            <div class="level-header">
+                <span class="level-badge ucp">Level 5: UCP • Mission 1 of 5</span>
+                <h2>The Four-Layer Architecture</h2>
+                <p>UCP's TCP/IP-inspired design for commerce</p>
+            </div>
+
+            <div class="diagram-container">
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <div class="guardrail-card" onclick="highlightCard(this)" style="border-color: rgba(0, 188, 212, 0.3); background: rgba(0, 188, 212, 0.1);">
+                        <h4>🛍️ Shopping Service Layer</h4>
+                        <p>Core primitives: checkout sessions, line items, totals, shipping. The foundation everything else builds on.</p>
+                    </div>
+                    <div class="guardrail-card" onclick="highlightCard(this)" style="border-color: rgba(0, 188, 212, 0.3); background: rgba(52, 168, 83, 0.1);">
+                        <h4>⚡ Capabilities Layer</h4>
+                        <p>Major functions: Checkout, Orders, Catalog, Identity Linking. Modular features merchants can support.</p>
+                    </div>
+                    <div class="guardrail-card" onclick="highlightCard(this)" style="border-color: rgba(0, 188, 212, 0.3); background: rgba(66, 133, 244, 0.1);">
+                        <h4>🔌 Extensions Layer</h4>
+                        <p>Optional add-ons: Discounts, Loyalty, AP2 Mandates, Returns. Merchants choose what to implement.</p>
+                    </div>
+                    <div class="guardrail-card" onclick="highlightCard(this)" style="border-color: rgba(0, 188, 212, 0.3); background: rgba(99, 91, 255, 0.1);">
+                        <h4>🔄 Services Layer</h4>
+                        <p>Transport: REST APIs, MCP for LLMs, A2A for agent-to-agent. Multiple ways to access the same commerce logic.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box ucp">
+                <p>💡 <strong>TCP/IP for commerce:</strong> Just as the internet has layers (physical, network, transport, application), UCP separates concerns so each layer can evolve independently.</p>
+            </div>
+
+            <div class="quiz-container">
+                <p class="quiz-question">A merchant wants to add loyalty point redemption to their checkout. Which UCP layer handles this?</p>
+                <div class="quiz-options">
+                    <div class="quiz-option" onclick="checkAnswer(this, false, 'ucp1')">
+                        <span class="option-letter">A</span>
+                        <span class="option-text">Shopping Service Layer—it's a core checkout primitive</span>
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(this, false, 'ucp1')">
+                        <span class="option-letter">B</span>
+                        <span class="option-text">Capabilities Layer—it's a major function like Orders</span>
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(this, true, 'ucp1')">
+                        <span class="option-letter">C</span>
+                        <span class="option-text">Extensions Layer—loyalty is an optional add-on</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-buttons">
+                <button class="btn btn-secondary" onclick="goToWelcome()">← Back</button>
+                <button class="btn btn-ucp" id="ucp1Next" onclick="goToLevel('ucp2')" disabled>Continue →</button>
+            </div>
+        </div>
+
+        <!-- UCP Level 2: The Four Primary Roles -->
+        <div class="game-screen" id="ucp2Screen">
+            <div class="level-header">
+                <span class="level-badge ucp">Level 5: UCP • Mission 2 of 5</span>
+                <h2>The Four Primary Roles</h2>
+                <p>Clear separation of responsibilities in UCP</p>
+            </div>
+
+            <div class="diagram-container">
+                <div class="three-parties" style="flex-wrap: wrap;">
+                    <div class="party-card" style="border: 2px solid var(--ucp-teal);">
+                        <div class="party-icon">🤖</div>
+                        <h3>Platform (Agent)</h3>
+                        <p>Orchestrates the shopping journey. Calls UCP APIs, manages user interaction.</p>
+                    </div>
+                    <div class="party-card" style="border: 2px solid var(--google-green);">
+                        <div class="party-icon">🏪</div>
+                        <h3>Business</h3>
+                        <p>Merchant of Record. Holds liability, fulfills orders, handles disputes.</p>
+                    </div>
+                    <div class="party-card" style="border: 2px solid var(--google-blue);">
+                        <div class="party-icon">🔐</div>
+                        <h3>Credential Provider</h3>
+                        <p>Manages tokens and secures PII. Issues payment credentials to agents.</p>
+                    </div>
+                    <div class="party-card" style="border: 2px solid var(--primary);">
+                        <div class="party-icon">💳</div>
+                        <h3>Payment Service Provider</h3>
+                        <p>Processes actual payments. Connects to card networks, handles settlement.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box ucp">
+                <p>💡 <strong>Separation of concerns:</strong> Unlike traditional e-commerce where these roles blur together, UCP explicitly separates them so each party knows their responsibilities.</p>
+            </div>
+
+            <div class="quiz-container">
+                <p class="quiz-question">An AI agent completes a purchase but the item never arrives. Under UCP's role model, who is liable to the customer?</p>
+                <div class="quiz-options">
+                    <div class="quiz-option" onclick="checkAnswer(this, false, 'ucp2')">
+                        <span class="option-letter">A</span>
+                        <span class="option-text">The Platform (Agent)—they orchestrated the purchase</span>
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(this, true, 'ucp2')">
+                        <span class="option-letter">B</span>
+                        <span class="option-text">The Business—they're the Merchant of Record with liability</span>
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(this, false, 'ucp2')">
+                        <span class="option-letter">C</span>
+                        <span class="option-text">The Payment Service Provider—they processed the payment</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-buttons">
+                <button class="btn btn-secondary" onclick="goToLevel('ucp1')">← Back</button>
+                <button class="btn btn-ucp" id="ucp2Next" onclick="goToLevel('ucp3')" disabled>Continue →</button>
+            </div>
+        </div>
+
+        <!-- UCP Level 3: Dynamic Discovery -->
+        <div class="game-screen" id="ucp3Screen">
+            <div class="level-header">
+                <span class="level-badge ucp">Level 5: UCP • Mission 3 of 5</span>
+                <h2>Dynamic Discovery</h2>
+                <p>How agents find merchant capabilities via /.well-known/ucp</p>
+            </div>
+
+            <div class="spt-spec">
+                <p style="margin-bottom: 15px; color: var(--gray);">An agent visiting any UCP-enabled merchant fetches their profile:</p>
+                <div class="spt-json">
+                    <pre>{
+  <span class="json-key">"merchant"</span>: <span class="json-string">"example-store.com"</span>,
+  <span class="json-key">"ucp_version"</span>: <span class="json-string">"1.0"</span>,
+  <span class="json-key">"capabilities"</span>: [
+    <span class="json-string">"checkout"</span>,
+    <span class="json-string">"orders"</span>,
+    <span class="json-string">"identity_linking"</span>
+  ],
+  <span class="json-key">"extensions"</span>: [
+    <span class="json-string">"loyalty"</span>,
+    <span class="json-string">"discounts"</span>
+  ],
+  <span class="json-key">"payment_methods"</span>: [
+    <span class="json-string">"card"</span>,
+    <span class="json-string">"bank_transfer"</span>
+  ],
+  <span class="json-key">"services"</span>: {
+    <span class="json-key">"rest"</span>: <span class="json-string">"https://api.example-store.com/ucp"</span>,
+    <span class="json-key">"mcp"</span>: <span class="json-string">"mcp://example-store.com"</span>
+  }
+}</pre>
+                </div>
+            </div>
+
+            <div class="info-box ucp">
+                <p>💡 <strong>Decentralized onboarding:</strong> No central registry needed. Any merchant can publish their UCP profile, and agents automatically discover what's supported. Like robots.txt but for commerce.</p>
+            </div>
+
+            <div class="quiz-container">
+                <p class="quiz-question">An agent wants to buy from a new merchant. How does it learn what payment methods and features are supported?</p>
+                <div class="quiz-options">
+                    <div class="quiz-option" onclick="checkAnswer(this, false, 'ucp3')">
+                        <span class="option-letter">A</span>
+                        <span class="option-text">Query a central Google registry of all merchants</span>
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(this, true, 'ucp3')">
+                        <span class="option-letter">B</span>
+                        <span class="option-text">Fetch the merchant's /.well-known/ucp profile directly</span>
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(this, false, 'ucp3')">
+                        <span class="option-letter">C</span>
+                        <span class="option-text">Try each feature and see what errors occur</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-buttons">
+                <button class="btn btn-secondary" onclick="goToLevel('ucp2')">← Back</button>
+                <button class="btn btn-ucp" id="ucp3Next" onclick="goToLevel('ucp4')" disabled>Continue →</button>
+            </div>
+        </div>
+
+        <!-- UCP Level 4: The Checkout State Machine -->
+        <div class="game-screen" id="ucp4Screen">
+            <div class="level-header">
+                <span class="level-badge ucp">Level 5: UCP • Mission 4 of 5</span>
+                <h2>The Checkout State Machine</h2>
+                <p>Four states guide every UCP transaction</p>
+            </div>
+
+            <div class="flow-container">
+                <div class="flow-step" onclick="activateUcpFlowStep(0)">
+                    <div class="flow-icon" id="ucpFlow0" style="border-color: var(--ucp-teal);">📝</div>
+                    <div class="flow-label">incomplete</div>
+                </div>
+                <div class="flow-arrow" id="ucpArrow0" style="color: var(--ucp-teal);">→</div>
+                <div class="flow-step" onclick="activateUcpFlowStep(1)">
+                    <div class="flow-icon" id="ucpFlow1" style="border-color: var(--ucp-teal);">⚠️</div>
+                    <div class="flow-label">requires_escalation</div>
+                </div>
+                <div class="flow-arrow" id="ucpArrow1" style="color: var(--ucp-teal);">→</div>
+                <div class="flow-step" onclick="activateUcpFlowStep(2)">
+                    <div class="flow-icon" id="ucpFlow2" style="border-color: var(--ucp-teal);">✓</div>
+                    <div class="flow-label">ready_for_complete</div>
+                </div>
+                <div class="flow-arrow" id="ucpArrow2" style="color: var(--ucp-teal);">→</div>
+                <div class="flow-step" onclick="activateUcpFlowStep(3)">
+                    <div class="flow-icon" id="ucpFlow3" style="border-color: var(--ucp-teal);">🎉</div>
+                    <div class="flow-label">completed</div>
+                </div>
+            </div>
+
+            <div class="info-box ucp" id="ucpFlowInfo">
+                <p>👆 Click each state to understand when the checkout enters that state.</p>
+            </div>
+
+            <div class="quiz-container">
+                <p class="quiz-question">An agent adds items to cart but the merchant requires age verification before selling alcohol. Which state is the checkout in?</p>
+                <div class="quiz-options">
+                    <div class="quiz-option" onclick="checkAnswer(this, false, 'ucp4')">
+                        <span class="option-letter">A</span>
+                        <span class="option-text">incomplete—agent can continue adding items</span>
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(this, true, 'ucp4')">
+                        <span class="option-letter">B</span>
+                        <span class="option-text">requires_escalation—human intervention needed</span>
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(this, false, 'ucp4')">
+                        <span class="option-letter">C</span>
+                        <span class="option-text">ready_for_complete—just needs payment confirmation</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-buttons">
+                <button class="btn btn-secondary" onclick="goToLevel('ucp3')">← Back</button>
+                <button class="btn btn-ucp" id="ucp4Next" onclick="goToLevel('ucp5')" disabled>Continue →</button>
+            </div>
+        </div>
+
+        <!-- UCP Level 5: Protocol Interoperability -->
+        <div class="game-screen" id="ucp5Screen">
+            <div class="level-header">
+                <span class="level-badge ucp">Level 5: UCP • Mission 5 of 5</span>
+                <h2>Protocol Interoperability</h2>
+                <p>UCP's transport-agnostic design works with MCP, A2A, and AP2</p>
+            </div>
+
+            <div class="diagram-container">
+                <div class="guardrail-cards">
+                    <div class="guardrail-card" onclick="highlightCard(this)" style="border-color: rgba(0, 188, 212, 0.3);">
+                        <h4>🔧 MCP (Model Context Protocol)</h4>
+                        <p>For LLM tool calling. Agents invoke UCP as tools within their context window.</p>
+                    </div>
+                    <div class="guardrail-card" onclick="highlightCard(this)" style="border-color: rgba(0, 188, 212, 0.3);">
+                        <h4>🤝 A2A (Agent-to-Agent)</h4>
+                        <p>For multi-agent commerce. Shopping agent talks to merchant's fulfillment agent.</p>
+                    </div>
+                    <div class="guardrail-card" onclick="highlightCard(this)" style="border-color: rgba(0, 188, 212, 0.3);">
+                        <h4>💳 AP2 Mandates</h4>
+                        <p>As an extension. UCP checkout can require signed AP2 mandates for payment authorization.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box ucp">
+                <p>💡 <strong>One commerce protocol, many transports:</strong> UCP defines what happens (checkout, orders, payments). How it's delivered (REST, MCP, A2A) is separate. This means merchants implement once, support all agent types.</p>
+            </div>
+
+            <div class="quiz-container">
+                <p class="quiz-question">A merchant implements UCP with REST APIs. Later, an AI agent wants to use MCP instead. What does the merchant need to do?</p>
+                <div class="quiz-options">
+                    <div class="quiz-option" onclick="checkAnswer(this, false, 'ucp5')">
+                        <span class="option-letter">A</span>
+                        <span class="option-text">Rebuild their entire commerce stack for MCP</span>
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(this, true, 'ucp5')">
+                        <span class="option-letter">B</span>
+                        <span class="option-text">Add MCP as another service endpoint—same UCP logic underneath</span>
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(this, false, 'ucp5')">
+                        <span class="option-letter">C</span>
+                        <span class="option-text">Tell the agent to use REST instead—MCP isn't supported</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-buttons">
+                <button class="btn btn-secondary" onclick="goToLevel('ucp4')">← Back</button>
+                <button class="btn btn-success" id="ucp5Next" onclick="showFinalResults()" disabled>Complete Training 🎓</button>
             </div>
         </div>
 
@@ -2677,18 +3683,44 @@
                 name: 'Level 1: ACP',
                 levelNum: 1,
                 maxScore: 115,
-                color: 'var(--primary)'
+                color: 'var(--primary)',
+                dotClass: ''
             },
             ap2: {
                 levels: ['ap21', 'ap22', 'ap25', 'ap23', 'ap24', 'ap26'],
                 name: 'Level 2: AP2',
                 levelNum: 2,
                 maxScore: 95,
-                color: 'var(--google-blue)'
+                color: 'var(--google-blue)',
+                dotClass: 'ap2-dot'
+            },
+            tap: {
+                levels: ['tap1', 'tap2', 'tap3'],
+                name: 'Level 3: TAP',
+                levelNum: 3,
+                maxScore: 45,
+                color: 'var(--visa-blue)',
+                dotClass: 'tap-dot'
+            },
+            map: {
+                levels: ['map1', 'map2', 'map3'],
+                name: 'Level 4: MAP',
+                levelNum: 4,
+                maxScore: 45,
+                color: 'var(--mastercard-red)',
+                dotClass: 'map-dot'
+            },
+            ucp: {
+                levels: ['ucp1', 'ucp2', 'ucp3', 'ucp4', 'ucp5'],
+                name: 'Level 5: UCP',
+                levelNum: 5,
+                maxScore: 75,
+                color: 'var(--ucp-teal)',
+                dotClass: 'ucp-dot'
             }
         };
 
-        const totalMaxScore = 190; // Combined max score for both levels
+        const totalMaxScore = 375; // Combined max score for all 5 levels
 
         // Initialize particles
         function createParticles() {
@@ -2886,7 +3918,94 @@ spaceship.innerHTML = `<svg viewBox="0 0 32 24" fill="${color}">
             goToLevel('ap21');
         }
 
-        // Show final results after completing both levels
+        // Show AP2 to TAP transition screen
+        function showAp2ToTapTransition() {
+            document.querySelectorAll('.game-screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('ap2ToTapTransitionScreen').classList.add('active');
+            showConfetti();
+            document.getElementById('progressContainer').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Start Level 3 (TAP - Visa)
+        function startTap() {
+            currentTrack = 'tap';
+            document.querySelectorAll('.game-screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('progressContainer').style.display = 'block';
+            setupProgressDots();
+            goToLevel('tap1');
+        }
+
+        // Show TAP to MAP transition screen
+        function showTapToMapTransition() {
+            document.querySelectorAll('.game-screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('tapToMapTransitionScreen').classList.add('active');
+            showConfetti();
+            document.getElementById('progressContainer').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Start Level 4 (MAP - Mastercard)
+        function startMap() {
+            currentTrack = 'map';
+            document.querySelectorAll('.game-screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('progressContainer').style.display = 'block';
+            setupProgressDots();
+            goToLevel('map1');
+        }
+
+        // Show MAP to UCP transition screen
+        function showMapToUcpTransition() {
+            document.querySelectorAll('.game-screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('mapToUcpTransitionScreen').classList.add('active');
+            showConfetti();
+            document.getElementById('progressContainer').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Start Level 5 (UCP - Google)
+        function startUcp() {
+            currentTrack = 'ucp';
+            document.querySelectorAll('.game-screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('progressContainer').style.display = 'block';
+            setupProgressDots();
+            goToLevel('ucp1');
+        }
+
+        // Auto-flip cards for TAP mission 1
+        function autoFlipTapCards() {
+            // Reset cards first
+            for (let i = 0; i < 3; i++) {
+                const card = document.getElementById(`tapFlipCard${i}`);
+                if (card) card.classList.remove('flipped');
+            }
+
+            // Flip each card with staggered delay
+            const delays = [300, 700, 1100];
+            for (let i = 0; i < 3; i++) {
+                setTimeout(() => {
+                    const card = document.getElementById(`tapFlipCard${i}`);
+                    if (card) card.classList.add('flipped');
+                }, delays[i]);
+            }
+        }
+
+        // UCP Flow descriptions
+        const ucpFlowDescriptions = [
+            '📝 <strong>incomplete:</strong> Checkout session started. Agent is still adding items, entering addresses, or providing payment info.',
+            '⚠️ <strong>requires_escalation:</strong> Something needs human attention—age verification, address confirmation, or payment issues. Agent cannot proceed alone.',
+            '✓ <strong>ready_for_complete:</strong> All requirements met. Agent can finalize the purchase. Just needs the final "complete" call.',
+            '🎉 <strong>completed:</strong> Order placed successfully. Payment captured, fulfillment started. Done!'
+        ];
+
+        let ucpFlowStepsClicked = new Set();
+
+        function activateUcpFlowStep(step) {
+            document.getElementById(`ucpFlow${step}`).classList.add('active');
+            if (step > 0) document.getElementById(`ucpArrow${step - 1}`).classList.add('active');
+
+            document.getElementById('ucpFlowInfo').innerHTML = `<p>${ucpFlowDescriptions[step]}</p>`;
+            ucpFlowStepsClicked.add(step);
+        }
+
+        // Show final results after completing all 5 levels
         function showFinalResults() {
             document.querySelectorAll('.game-screen').forEach(s => s.classList.remove('active'));
             document.getElementById('resultsScreen').classList.add('active');
@@ -2894,11 +4013,11 @@ spaceship.innerHTML = `<svg viewBox="0 0 32 24" fill="${color}">
             document.getElementById('progressContainer').scrollIntoView({ behavior: 'smooth' });
 
             document.getElementById('resultsTitle').textContent = 'Training Complete!';
-            document.getElementById('resultsSubtitle').textContent = "You've mastered the payments basics of ACP and AP2";
+            document.getElementById('resultsSubtitle').textContent = "You've mastered all 5 agentic commerce protocols";
             document.getElementById('finalScore').textContent = score;
             document.getElementById('maxScore').textContent = totalMaxScore;
-            document.getElementById('correctAnswers').textContent = Math.floor(score / 10);
-            document.getElementById('levelsCompleted').textContent = '11';
+            document.getElementById('correctAnswers').textContent = Math.floor(score / 15);
+            document.getElementById('levelsCompleted').textContent = '23';
 
             const learnings = document.getElementById('keyLearnings');
             learnings.innerHTML = `
@@ -2906,13 +4025,12 @@ spaceship.innerHTML = `<svg viewBox="0 0 32 24" fill="${color}">
                 <ul>
                     <li><span class="check-icon">✓</span><span><strong>ACP (Stripe/OpenAI):</strong> SPTs with max_amount, expires_at constraints; merchant remains merchant-of-record</span></li>
                     <li><span class="check-icon">✓</span><span><strong>AP2 (Google):</strong> Three-mandate chain (Intent → Cart → Payment) with cryptographic signatures</span></li>
-                    <li><span class="check-icon">✓</span><span><strong>Zero Credential Exposure:</strong> Both protocols keep PANs away from AI agents</span></li>
-                    <li><span class="check-icon">✓</span><span><strong>Audit & Liability:</strong> Clear attribution chains for dispute resolution</span></li>
+                    <li><span class="check-icon">✓</span><span><strong>TAP (Visa):</strong> RFC 9421 HTTP signatures, trusted agent registry, Payment Instructions API</span></li>
+                    <li><span class="check-icon">✓</span><span><strong>MAP (Mastercard):</strong> Know Your Agent verification, Agentic Tokens, biometric intent capture</span></li>
+                    <li><span class="check-icon">✓</span><span><strong>UCP (Google):</strong> Four-layer architecture, role separation, /.well-known/ucp discovery</span></li>
                 </ul>
-                <p style="margin-top: 20px; color: var(--gray); font-size: 0.95rem;">Learn more on the official websites: <a href="https://www.agenticcommerce.dev/" target="_blank" style="color: var(--primary);">ACP</a>, <a href="https://ap2-protocol.org/" target="_blank" style="color: var(--secondary);">AP2</a>.</p>
+                <p style="margin-top: 20px; color: var(--gray); font-size: 0.95rem;">Learn more: <a href="https://www.agenticcommerce.dev/" target="_blank" style="color: var(--primary);">ACP</a> • <a href="https://ap2-protocol.org/" target="_blank" style="color: var(--google-blue);">AP2</a> • <a href="https://developer.visa.com/capabilities/trusted-agent-protocol" target="_blank" style="color: var(--visa-blue);">TAP</a></p>
             `;
-
-            document.getElementById('specLink').onclick = () => window.open('https://www.agenticcommerce.dev/', '_blank');
 
             document.querySelectorAll('.level-dot').forEach(dot => {
                 dot.classList.add('completed');
@@ -2925,12 +4043,13 @@ spaceship.innerHTML = `<svg viewBox="0 0 32 24" fill="${color}">
 
         function setupProgressDots() {
             const dotsContainer = document.getElementById('levelDots');
-            const levels = trackConfig[currentTrack].levels;
+            const config = trackConfig[currentTrack];
+            const levels = config.levels;
             dotsContainer.innerHTML = '';
 
             levels.forEach((level, index) => {
                 const dot = document.createElement('div');
-                dot.className = 'level-dot' + (currentTrack === 'ap2' ? ' ap2-dot' : '');
+                dot.className = 'level-dot' + (config.dotClass ? ' ' + config.dotClass : '');
                 dot.dataset.level = level;
                 dot.textContent = index === levels.length - 1 ? '🎓' : (index + 1);
                 dotsContainer.appendChild(dot);
@@ -2988,7 +4107,11 @@ spaceship.innerHTML = `<svg viewBox="0 0 32 24" fill="${color}">
             }
 
             // Reset flow info boxes
-            document.getElementById('acpFlowInfo').innerHTML = '<p>👆 Click each step to understand the data flow at each stage.</p>';
+            const acpFlowInfo = document.getElementById('acpFlowInfo');
+            if (acpFlowInfo) acpFlowInfo.innerHTML = '<p>👆 Click each step to understand the data flow at each stage.</p>';
+
+            const ucpFlowInfo = document.getElementById('ucpFlowInfo');
+            if (ucpFlowInfo) ucpFlowInfo.innerHTML = '<p>👆 Click each state to understand when the checkout enters that state.</p>';
 
             // Reset detective simulation
             resetDetectiveSimulation();
@@ -2996,11 +4119,25 @@ spaceship.innerHTML = `<svg viewBox="0 0 32 24" fill="${color}">
             // Reset flip cards for Mission 1
             resetFlipCards();
 
+            // Reset TAP flip cards
+            resetTapFlipCards();
+
             // Reset Sarah's typing for AP2 Mission 1
             resetSarahTyping();
 
+            // Reset UCP flow steps
+            ucpFlowStepsClicked.clear();
+
             // Reset next buttons
             document.querySelectorAll('[id$="Next"]').forEach(btn => btn.disabled = true);
+        }
+
+        // Reset TAP flip cards
+        function resetTapFlipCards() {
+            for (let i = 0; i < 3; i++) {
+                const card = document.getElementById(`tapFlipCard${i}`);
+                if (card) card.classList.remove('flipped');
+            }
         }
 
         // Reset detective simulation to initial state
@@ -3068,6 +4205,7 @@ spaceship.innerHTML = `<svg viewBox="0 0 32 24" fill="${color}">
             if (levelId === 'ap21') startSarahTyping();
             if (levelId === 'acp6') initAcpFinalQuiz();
             if (levelId === 'ap26') initAp2FinalQuiz();
+            if (levelId === 'tap1') autoFlipTapCards();
 
             // Scroll to progress bar on mobile
             document.getElementById('progressContainer').scrollIntoView({ behavior: 'smooth' });
