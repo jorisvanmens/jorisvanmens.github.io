@@ -515,7 +515,7 @@
 
         .track-selection {
             display: flex;
-            gap: 20px;
+            gap: 12px;
             justify-content: center;
             flex-wrap: wrap;
             margin-top: 30px;
@@ -523,9 +523,9 @@
 
         .track-card {
             background: var(--darker);
-            border-radius: 20px;
-            padding: 25px;
-            width: 280px;
+            border-radius: 16px;
+            padding: 15px 12px;
+            width: 160px;
             text-align: center;
             border: 2px solid transparent;
             cursor: pointer;
@@ -559,8 +559,8 @@
         }
 
         .track-card.tap:hover {
-            border-color: var(--visa-blue);
-            box-shadow: 0 10px 30px rgba(26, 31, 113, 0.2);
+            border-color: var(--visa-gold);
+            box-shadow: 0 10px 30px rgba(247, 182, 0, 0.3);
         }
 
         .track-card.map {
@@ -582,26 +582,26 @@
         }
 
         .track-card h3 {
-            font-size: 1.3rem;
-            margin-bottom: 5px;
+            font-size: 1.1rem;
+            margin-bottom: 2px;
         }
 
         .track-card .track-subtitle {
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             color: var(--gray);
-            margin-bottom: 15px;
+            margin-bottom: 10px;
         }
 
         .track-card .track-meta {
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             color: var(--gray);
         }
 
         .track-card .protocol-fullname {
-            font-size: 0.9rem;
+            font-size: 0.7rem;
             color: var(--gray);
             margin-top: 2px;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             opacity: 0.8;
         }
 
@@ -609,13 +609,13 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 12px;
-            margin-bottom: 15px;
-            min-height: 20px;
+            gap: 8px;
+            margin-bottom: 8px;
+            min-height: 18px;
         }
 
         .track-card .company-logos img {
-            height: 16px;
+            height: 14px;
             width: auto;
             opacity: 0.7;
         }
@@ -1949,7 +1949,7 @@
             .token-visual { flex-direction: column; }
             .transform-arrow { transform: rotate(90deg); }
             .track-selection { flex-direction: column; align-items: center; }
-            .track-card { width: 100%; max-width: 320px; }
+            .track-card { width: 45%; max-width: 160px; }
             .welcome-stats { display: none; }
         }
 
@@ -1977,7 +1977,7 @@
     <div class="game-container">
         <header class="header">
             <h1>🤖 Agentic Payments Protocols: The Game</h1>
-            <p class="subtitle">Master the 5 protocols powering AI commerce</p>
+            <p class="subtitle">A quick introduction to 5 AI payments & commerce protocols</p>
         </header>
 
         <div class="progress-container" id="progressContainer" style="display: none;">
@@ -2019,7 +2019,7 @@
                     <img src="agent-logo.png" alt="Logo">
                     <div class="welcome-logo-shimmer"></div>
                 </div>
-                <p>Five protocols are competing to power AI agent commerce. Your mission: master them all.</p>
+                <p>To give AI agents the ability to make online purchases, five (competing) agentic commerce protocols have recently emerged. Your mission: master the protocols.</p>
 
                 <div class="track-selection" style="max-width: 900px;">
                     <div class="track-card acp" onclick="startGame()">
@@ -2046,7 +2046,7 @@
                         <h3>TAP</h3>
                         <div class="protocol-fullname">Trusted Agent Protocol</div>
                         <div class="company-logos">
-                            <span style="font-size: 0.9rem; font-weight: bold; color: var(--visa-blue);">VISA</span>
+                            <img src="visa-logo-white.png" alt="Visa">
                         </div>
                         <div class="track-meta">3 missions</div>
                     </div>
@@ -2055,7 +2055,7 @@
                         <h3>MAP</h3>
                         <div class="protocol-fullname">Mastercard Agent Pay</div>
                         <div class="company-logos">
-                            <span style="font-size: 0.9rem; font-weight: bold; color: var(--mastercard-red);">MASTERCARD</span>
+                            <img src="mastercard-logo-white.png" alt="Mastercard">
                         </div>
                         <div class="track-meta">3 missions</div>
                     </div>
