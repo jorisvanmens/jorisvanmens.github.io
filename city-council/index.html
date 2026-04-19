@@ -6,17 +6,21 @@
   <title>Sausalito City Council — Agenda Summary</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
       background: #f5f7fa;
       color: #1a2332;
       line-height: 1.65;
     }
+
     .page {
       max-width: 780px;
       margin: 0 auto;
       padding: 2.5rem 1.5rem 4rem;
     }
+
+    /* ── Header ── */
     .site-header {
       border-bottom: 3px solid #1d4ed8;
       padding-bottom: 1.25rem;
@@ -33,16 +37,75 @@
       color: #64748b;
       margin-top: 0.2rem;
     }
-    .placeholder {
-      background: #fff;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      padding: 2rem;
-      color: #64748b;
-      text-align: center;
+
+    /* ── Summary content ── */
+    .summary h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin: 2rem 0 0.6rem;
+      padding-bottom: 0.35rem;
+      border-bottom: 1px solid #e2e8f0;
     }
-    .placeholder p { margin: 0.5rem 0; }
-    .placeholder a { color: #1d4ed8; }
+
+    .summary h2:first-child { margin-top: 0; }
+
+    .summary p {
+      margin: 0.6rem 0;
+      color: #334155;
+    }
+
+    .summary ul, .summary ol {
+      margin: 0.5rem 0 0.5rem 1.4rem;
+      color: #334155;
+    }
+
+    .summary li {
+      margin: 0.3rem 0;
+    }
+
+    .summary strong {
+      color: #1e293b;
+      font-weight: 600;
+    }
+
+    /* ── Topics of Interest callout ── */
+    .topics-callout {
+      background: #eff6ff;
+      border-left: 4px solid #1d4ed8;
+      border-radius: 0 6px 6px 0;
+      padding: 1rem 1.25rem;
+      margin-top: 0.6rem;
+    }
+
+    .topics-callout p,
+    .topics-callout li {
+      color: #1e3a5f;
+    }
+
+    /* ── Footer ── */
+    .page-footer {
+      margin-top: 3rem;
+      padding-top: 1rem;
+      border-top: 1px solid #e2e8f0;
+      font-size: 0.82rem;
+      color: #94a3b8;
+      line-height: 1.6;
+    }
+
+    .page-footer a {
+      color: #1d4ed8;
+      text-decoration: none;
+    }
+
+    .page-footer a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 600px) {
+      .page { padding: 1.5rem 1rem 3rem; }
+      .site-header h1 { font-size: 1.3rem; }
+    }
   </style>
 </head>
 <body>
@@ -51,11 +114,93 @@
       <h1>Sausalito City Council</h1>
       <p class="subtitle">AI-generated agenda summary &mdash; cycling, pedestrian safety &amp; housing highlights</p>
     </header>
-    <div class="placeholder">
-      <p><strong>No summary available yet.</strong></p>
-      <p>Run <code>python city_council_agenda.py</code> to generate the first summary.</p>
-      <p>Upcoming meetings: <a href="https://www.sausalito.gov/city-government/city-council/meetings-and-agendas">sausalito.gov</a></p>
+
+    <div class="summary" id="summary">
+      <h2>1. Meeting Overview</h2>
+<p>The Sausalito City Council meets on <strong>Tuesday, April 21, 2026</strong>, with a <strong>Special Meeting (Closed Session) at 3:30 PM</strong> and a <strong>Regular Meeting at 5:00 PM</strong>, held in the <strong>Council Chambers at 420 Litho Street, Sausalito, CA 94965</strong> (also available via Zoom).</p>
+<p>This meeting is notable for its substantial closed session covering labor negotiations, the City Manager position, and multiple litigation matters—including a case brought by YIMBY against the City. In open session, the Council will tackle capital improvement program strategy for the coming fiscal year, a significant pedestrian safety study related to daylighting at crosswalks, a downtown resident parking program review, and fiscal policy discussions. Infrastructure investments—sidewalks, culverts, and roadway rehabilitation—feature prominently on the consent calendar.</p>
+<h2>2. Agenda Items</h2>
+<p><strong>Closed Session:</strong>
+- C1. Conference with labor negotiator regarding SEIU employee organization
+- C2. Public employee employment discussion regarding City Manager title
+- C3. Existing litigation: <em>Naples v. Macmarin, Inc. d/b/a The Spinnaker, et al.</em>
+- C4. Existing litigation: <em>Yes in My Back Yard v. City of Sausalito</em>
+- C5. Anticipated litigation: one case with significant exposure
+- C6. Real property negotiations regarding submerged tideland portions of Pine Street, Johnson Street, and Donahue Avenue with Pelican Harbor Associates, LP</p>
+<p><strong>Consent Calendar:</strong>
+- 3.B: Receive and file quarterly sales tax reports (Q4 FY 2025-26)
+- 3.C: Receive and file fiscal year-end budget balancing action plan
+- 3.D: Adopt resolution designating rotating Board of Appeals
+- 3.E: Authorize professional services agreement with BKF Engineers for <strong>Coloma Street Sidewalk Project</strong> construction bid solicitation
+- 3.F: Authorize professional services agreement for 2026 Culvert Replacement Program bid specs ($108,272)
+- 3.G: Approve additional $25,000 for 2024 Roadway Rehabilitation Project dig-out work
+- 3.H: Approve services contract with Mt. Tam Adventure Camps for youth programming (~$115,000/year)
+- 3.I: Waiver of second reading and adoption of Ordinance No. 05-2026 adopting CalGreen Tier 1 voluntary green building measures
+- 3.J: Receive and file Library Q2 &amp; Q3 reports</p>
+<p><strong>Business Items:</strong>
+- 5.A: Concurrence on general strategy for Capital Improvement Program projects for FY 2026/27 budget incorporation
+- 5.B: Authorize additional $34,680 (Measure L funds) for a study on <strong>AB 413 daylighting impacts at marked and unmarked crosswalks</strong> on Caledonia Street and Bridgeway downtown
+- 5.C: Review and provide direction on <strong>Resident Parking Benefit Program</strong> for downtown municipal parking lots 1–4
+- 5.D: Draft General Fund Transfer Policy discussion and direction
+- 5.E: Introduction and waiver of first reading of Ordinance No. 06-2026 re-adopting Military Equipment Use Policy 705</p>
+<h2>3. Topics of Interest</h2>
+<h3>Pedestrian Safety</h3>
+<ul>
+<li>
+<p><strong>Item 3.E — Coloma Street Sidewalk Project</strong>: Authorizes the City Manager to execute a professional services agreement with BKF Engineers to solicit construction bids for a sidewalk project on Coloma Street. <strong>Action requested: Consent calendar approval (vote).</strong></p>
+</li>
+<li>
+<p><strong>Item 5.B — AB 413 Daylighting Study on Caledonia Street and Bridgeway</strong>: Authorizes an additional $34,680 from Measure L funds for a study examining the impacts of AB 413 (California's daylighting law, which requires removal of parking near crosswalks to improve pedestrian visibility) at marked and unmarked crosswalks in two key downtown corridors. This is a direct pedestrian safety measure that also has implications for parking and potentially cycling visibility. <strong>Action requested: Authorization of funding (vote).</strong></p>
+</li>
+<li>
+<p><strong>Item 3.G — 2024 Roadway Rehabilitation Project Additional Appropriation</strong>: While primarily a roadway repair item, roadway rehabilitation projects can include improvements to pedestrian conditions along affected streets. <strong>Action requested: Consent calendar approval (vote).</strong></p>
+</li>
+<li>
+<p><strong>Item 5.A — Capital Improvement Program Strategy for FY 2026/27</strong>: The CIP often encompasses sidewalk, crosswalk, and other pedestrian infrastructure projects, as well as potential cycling and roadway safety investments. The Council is asked to concur on the general strategy, which will shape next year's infrastructure priorities. <strong>Action requested: Concurrence/direction (discussion and vote).</strong></p>
+</li>
+</ul>
+<h3>Cycling</h3>
+<ul>
+<li>
+<p><strong>Item 5.B</strong> (described above) is also tangentially relevant to cycling, as daylighting at crosswalks on <strong>Bridgeway</strong>—Sausalito's primary north-south corridor used heavily by cyclists—affects the road environment for all users, and AB 413 intersection changes can alter the streetscape in ways that impact bike safety and access.</p>
+</li>
+<li>
+<p><strong>Item 5.A — Capital Improvement Program Strategy</strong> may include cycling-related projects, though specific bike infrastructure items are not detailed in the agenda text.</p>
+</li>
+</ul>
+<h3>Housing</h3>
+<ul>
+<li><strong>Closed Session Item C4 — <em>Yes in My Back Yard v. City of Sausalito</em></strong>: This is an existing litigation matter involving YIMBY, a prominent pro-housing organization. While discussed in closed session (no public details), this case is directly related to housing policy and the City's compliance with state housing laws. <strong>Action requested: Closed session legal counsel conference (no public vote).</strong></li>
+</ul>
+<p>No other agenda items explicitly address housing, zoning amendments, ADUs, density bonuses, or housing element updates.</p>
     </div>
+
+    <script>
+      // Wrap the Topics of Interest section content in a callout box
+      const headings = document.querySelectorAll('#summary h2');
+      headings.forEach(h2 => {
+        if (h2.textContent.includes('Topics of Interest')) {
+          const wrapper = document.createElement('div');
+          wrapper.className = 'topics-callout';
+          let node = h2.nextSibling;
+          const collected = [];
+          while (node) {
+            const next = node.nextSibling;
+            if (node.nodeType === 1 && node.tagName === 'H2') break;
+            collected.push(node);
+            node = next;
+          }
+          h2.after(wrapper);
+          collected.forEach(n => wrapper.appendChild(n));
+        }
+      });
+    </script>
+
+    <footer class="page-footer">
+      <p>Last updated: 19 April 2026 at 1:35 PM UTC</p>
+      <p>Source: <a href="https://sausalito.granicus.com/AgendaViewer.php?view_id=6&event_id=2791">https://sausalito.granicus.com/AgendaViewer.php?view_id=6&event_id=2791</a></p>
+      <p>Summary generated by Claude AI. Always verify details with the <a href="https://sausalito.granicus.com/AgendaViewer.php?view_id=6&event_id=2791">official agenda</a>.</p>
+    </footer>
   </div>
 </body>
 </html>
