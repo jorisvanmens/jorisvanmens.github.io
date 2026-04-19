@@ -23,6 +23,7 @@ import argparse
 import re
 import sys
 from datetime import datetime, timezone
+from urllib.parse import parse_qs, urlparse
 from pathlib import Path
 
 import anthropic
@@ -72,17 +73,20 @@ def find_next_agenda_url() -> str:
     # Granicus typically lists meetings newest-first; the first AgendaViewer
     # link is the most recent/upcoming meeting with a posted agenda.
     href = agenda_links[0]["href"]
-    if not href.startswith("http"):
-        domain = GRANICUS_BASE.replace("https://", "")  # "sausalito.granicus.com"
-        href_stripped = href.lstrip("/")
-        # href may be domain-relative ("sausalito.granicus.com/...") or
-        # path-relative ("AgendaViewer.php?..."); handle both
-        if href_stripped.startswith(domain):
-            href = "https://" + href_stripped
-        else:
-            href = f"{GRANICUS_BASE}/{href_stripped}"
 
-    return href
+    # Rebuild the URL from its query parameters so the base is always correct,
+    # regardless of whether the href is absolute, protocol-relative, domain-
+    # relative, or path-relative.
+    query = urlparse(href).query or (href.split("?", 1)[1] if "?" in href else "")
+    params = parse_qs(query)
+    view_id = params.get("view_id", [""])[0]
+    event_id = params.get("event_id", [""])[0]
+    if not view_id or not event_id:
+        raise ValueError(
+            f"Could not extract view_id/event_id from agenda link: {href!r}"
+        )
+
+    return f"{GRANICUS_BASE}/AgendaViewer.php?view_id={view_id}&event_id={event_id}"
 
 
 def fetch_agenda_text(agenda_url: str) -> tuple[str, str]:
