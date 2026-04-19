@@ -73,7 +73,14 @@ def find_next_agenda_url() -> str:
     # link is the most recent/upcoming meeting with a posted agenda.
     href = agenda_links[0]["href"]
     if not href.startswith("http"):
-        href = f"{GRANICUS_BASE}/{href.lstrip('/')}"
+        domain = GRANICUS_BASE.replace("https://", "")  # "sausalito.granicus.com"
+        href_stripped = href.lstrip("/")
+        # href may be domain-relative ("sausalito.granicus.com/...") or
+        # path-relative ("AgendaViewer.php?..."); handle both
+        if href_stripped.startswith(domain):
+            href = "https://" + href_stripped
+        else:
+            href = f"{GRANICUS_BASE}/{href_stripped}"
 
     return href
 
