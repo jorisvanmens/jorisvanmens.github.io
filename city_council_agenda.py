@@ -32,6 +32,7 @@ from bs4 import BeautifulSoup
 
 GRANICUS_BASE = "https://sausalito.granicus.com"
 PUBLISHER_URL = f"{GRANICUS_BASE}/ViewPublisher.php?view_id=6"
+AGENDA_URL_TEMPLATE = f"{GRANICUS_BASE}/AgendaViewer.php?view_id=6&event_id={{event_id}}"
 
 HTML_OUTPUT_PATH = Path(__file__).parent / "city-council" / "index.html"
 
@@ -57,22 +58,16 @@ def find_next_agenda_url() -> str:
     resp = requests.get(PUBLISHER_URL, headers=HEADERS, timeout=20)
     resp.raise_for_status()
 
-    # Regex directly on the raw HTML — immune to any href format variation.
-    # Matches e.g. AgendaViewer.php?view_id=6&event_id=2791 (& or &amp;, any order)
-    match = re.search(
-        r"AgendaViewer\.php\?[^\"'<>]*?view_id=(\d+)[^\"'<>]*?event_id=(\d+)",
-        resp.text,
-        re.I,
-    )
+    match = re.search(r"event_id=(\d+)", resp.text)
     if not match:
         raise ValueError(
-            "No AgendaViewer link with view_id/event_id found on the Granicus publisher page. "
+            "No event_id found on the Granicus publisher page. "
             "The page structure may have changed, or no agendas are currently posted.\n"
             "Try passing --url with a direct agenda link instead."
         )
 
-    view_id, event_id = match.group(1), match.group(2)
-    return f"{GRANICUS_BASE}/AgendaViewer.php?view_id={view_id}&event_id={event_id}"
+    event_id = match.group(1)
+    return AGENDA_URL_TEMPLATE.format(event_id=event_id)
 
 
 def fetch_agenda_text(agenda_url: str) -> tuple[str, str]:
