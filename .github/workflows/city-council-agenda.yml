@@ -1,7 +1,14 @@
 name: City Council Agenda Summary
 
 on:
+  schedule:
+    - cron: '0 0 * * *'  # midnight UTC = 4 PM PST (5 PM PDT in summer)
   workflow_dispatch:
+    inputs:
+      force:
+        description: 'Re-run even if the agenda has not changed'
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -31,16 +38,18 @@ jobs:
       - name: Run agenda summarizer
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: python city_council_agenda.py
+        run: |
+          FORCE=""
+          if [ "${{ github.event.inputs.force }}" = "true" ]; then FORCE="--force"; fi
+          python city_council_agenda.py $FORCE
 
-      - name: Commit updated HTML
+      - name: Commit updated files
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add city-council/index.html
+          git add city-council/
           if git diff --cached --quiet; then
             echo "No changes to commit."
           else
             git commit -m "Update City Council agenda summary [automated]"
             git push
-          fi

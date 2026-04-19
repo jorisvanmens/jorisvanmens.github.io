@@ -38,6 +38,7 @@ PUBLISHER_URL = f"{GRANICUS_BASE}/ViewPublisher.php?view_id=6"
 AGENDA_URL_TEMPLATE = f"{GRANICUS_BASE}/AgendaViewer.php?view_id=6&event_id={{event_id}}"
 
 HTML_OUTPUT_PATH = Path(__file__).parent / "city-council" / "index.html"
+LAST_EVENT_ID_PATH = Path(__file__).parent / "city-council" / "last_event_id"
 
 HEADERS = {
     "User-Agent": (
@@ -48,6 +49,19 @@ HEADERS = {
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
     "Accept-Language": "en-US,en;q=0.9",
 }
+
+
+def get_last_event_id() -> str:
+    """Return the event_id from the previous successful run, or '' if none."""
+    if LAST_EVENT_ID_PATH.exists():
+        return LAST_EVENT_ID_PATH.read_text(encoding="utf-8").strip()
+    return ""
+
+
+def save_event_id(event_id: str) -> None:
+    """Persist the event_id after a successful run."""
+    LAST_EVENT_ID_PATH.parent.mkdir(exist_ok=True)
+    LAST_EVENT_ID_PATH.write_text(event_id, encoding="utf-8")
 
 
 def find_next_agenda_url() -> str:
@@ -455,6 +469,11 @@ def main() -> None:
             "  --url 'https://sausalito.granicus.com/AgendaViewer.php?view_id=6&event_id=2791'"
         ),
     )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Run even if the agenda event_id has not changed since the last run.",
+    )
     args = parser.parse_args()
 
     # ── Step 1: Resolve the agenda URL ───────────────────────────────────────
@@ -486,6 +505,19 @@ def main() -> None:
         sys.exit(1)
 
     meeting_date = extract_meeting_date(agenda_text)
+    # ── Check whether this agenda is new ─────────────────────────────────────
+    event_id_match = re.search(r"event_id=(\d+)", agenda_url)
+    current_event_id = event_id_match.group(1) if event_id_match else ""
+    last_event_id = get_last_event_id()
+
+    if not args.force and current_event_id and current_event_id == last_event_id:
+        print(f"Agenda event_id={current_event_id} was already processed. Nothing to do.")
+        print("Pass --force to re-run anyway.")
+        sys.exit(0)
+
+    print(f"New agenda detected (event_id={current_event_id}, last={last_event_id or 'none'}).\n")
+
+    # ── Step 2b: Fetch and parse the agenda ───────────────────────────────────
     print(f"Meeting : {meeting_title}")
     print(f"Date    : {meeting_date or '(not found)'}")
     print(f"Source  : {source_url}")
@@ -506,9 +538,12 @@ def main() -> None:
         print(f"Error calling Claude API: {exc}", file=sys.stderr)
         sys.exit(1)
 
-    # ── Step 4: Write HTML ────────────────────────────────────────────────────
+    # ── Step 4: Write HTML and save state ────────────────────────────────────
     html_path = write_html(meeting_title, summary, agenda_url, source_url, meeting_date)
     print(f"HTML written to: {html_path}\n")
+    if current_event_id:
+        save_event_id(current_event_id)
+        print(f"Saved event_id={current_event_id} to {LAST_EVENT_ID_PATH}\n")
 
     # ── Step 5: Print to stdout ───────────────────────────────────────────────
     print("=" * 60)
