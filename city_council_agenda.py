@@ -39,7 +39,6 @@ AGENDA_URL_TEMPLATE = f"{GRANICUS_BASE}/AgendaViewer.php?view_id=6&event_id={{ev
 
 HTML_OUTPUT_PATH = Path(__file__).parent / "city-council" / "index.html"
 
-# Browser-like headers to avoid 503s from servers that block plain bots
 HEADERS = {
     "User-Agent": (
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
@@ -74,7 +73,7 @@ def find_next_agenda_url() -> str:
 
 
 def _get(url: str) -> requests.Response:
-    """GET a URL, retrying with SSL verification disabled on certificate errors.
+    """GET a URL, retrying without SSL verification on certificate errors.
     Granicus redirects agendas to S3 URLs whose bucket names contain underscores,
     which causes hostname validation to fail on some runners."""
     try:
@@ -89,7 +88,6 @@ def _parse_pdf(data: bytes) -> tuple[str, str]:
     with pdfplumber.open(io.BytesIO(data)) as pdf:
         pages = [page.extract_text() or "" for page in pdf.pages]
     text = re.sub(r"\n{3,}", "\n\n", "\n\n".join(pages))
-    # Use the first non-empty line as the title
     title = next((ln.strip() for ln in text.splitlines() if ln.strip()), "City Council Meeting")
     return title, text
 
@@ -110,29 +108,44 @@ def _parse_html(resp: requests.Response) -> tuple[str, str]:
     return meeting_title, re.sub(r"\n{3,}", "\n\n", raw_text)
 
 
-def fetch_agenda_text(agenda_url: str) -> tuple[str, str]:
+def fetch_agenda_text(agenda_url: str) -> tuple[str, str, str]:
     """
-    Fetch a Granicus AgendaViewer URL and return (meeting_title, agenda_text).
-    Handles both HTML pages and PDF redirects (including S3 SSL quirks).
+    Fetch a Granicus AgendaViewer URL.
+    Returns (meeting_title, agenda_text, source_url) where source_url is the
+    final URL after any redirects (may be a PDF on S3).
     """
     print(f"Fetching agenda from:\n  {agenda_url}")
     resp = _get(agenda_url)
     resp.raise_for_status()
 
+    source_url = resp.url
     content_type = resp.headers.get("Content-Type", "")
     is_pdf = "pdf" in content_type or resp.url.lower().endswith(".pdf")
 
     if is_pdf:
         print(f"  → PDF detected ({resp.url}), extracting text with pdfplumber")
-        return _parse_pdf(resp.content)
+        title, text = _parse_pdf(resp.content)
     else:
-        return _parse_html(resp)
+        title, text = _parse_html(resp)
+
+    return title, text, source_url
+
+
+def extract_meeting_date(text: str) -> str:
+    """Return the first recognisable long-form date found in the agenda text."""
+    m = re.search(
+        r"\b(?:January|February|March|April|May|June|July|August|"
+        r"September|October|November|December)\s+\d{1,2},\s+20\d{2}\b",
+        text[:3000],
+        re.I,
+    )
+    return m.group(0) if m else ""
 
 
 def summarize_agenda(meeting_title: str, agenda_text: str, agenda_url: str) -> str:
     """
-    Send the agenda text to Claude and return a structured Markdown summary
-    highlighting cycling, pedestrian safety, and housing items.
+    Send the agenda text to Claude and return a structured Markdown summary.
+    Section order: Overview → Topics of Interest → Full Agenda.
     Uses a cached system prompt to reduce token costs on repeated runs.
     """
     client = anthropic.Anthropic()
@@ -152,18 +165,21 @@ Produce a summary with exactly three sections:
 ## 1. Meeting Overview
 State the meeting date, time, and location. Then write 2–3 sentences summarizing the overall themes or most significant items on the agenda.
 
-## 2. Agenda Items
-A concise bullet-point list of all substantive agenda items. Skip purely procedural items (call to order, roll call, approval of prior minutes, adjournment).
-
-## 3. Topics of Interest
+## 2. Topics of Interest
 Identify every agenda item related to any of the following, even if only tangentially:
 - **Cycling** — bike lanes, bicycle infrastructure, bike-share, Caltrans roadway projects, multi-use paths, etc.
 - **Pedestrian safety** — sidewalks, crosswalks, traffic calming, speed limits, Vision Zero, school safety zones, ADA accessibility, etc.
 - **Housing** — affordable housing, zoning or general plan amendments, development/subdivision approvals, ADUs, density bonuses, inclusionary requirements, housing element updates, etc.
 
-For each relevant item, include: the agenda item number, a brief description, and what action is being requested (vote, first reading, discussion only, public hearing, etc.).
+For each relevant item include:
+- The agenda item number and a brief description
+- What action is being requested (vote, first reading, discussion only, public hearing, etc.)
+- A **Links** sub-list of relevant URLs: include any document URLs or project pages explicitly mentioned in the agenda text, plus any well-known accurate external resources (sausalito.gov, Marin County, Caltrans, CA HCD, etc.). Do NOT fabricate URLs.
 
-If none of those three topics appear on the agenda, state that clearly.
+If none of the three topics appear on the agenda, state that clearly.
+
+## 3. Full Agenda
+A concise bullet-point list of all substantive agenda items. Skip purely procedural items (call to order, roll call, approval of prior minutes, adjournment).
 
 ---
 Agenda source: {agenda_url}
@@ -174,7 +190,7 @@ Meeting: {meeting_title}
 
     message = client.messages.create(
         model="claude-opus-4-6",
-        max_tokens=1500,
+        max_tokens=2000,
         system=[
             {
                 "type": "text",
@@ -188,7 +204,13 @@ Meeting: {meeting_title}
     return message.content[0].text
 
 
-def write_html(meeting_title: str, summary_markdown: str, agenda_url: str) -> Path:
+def write_html(
+    meeting_title: str,
+    summary_markdown: str,
+    agenda_url: str,
+    source_url: str,
+    meeting_date: str,
+) -> Path:
     """
     Convert the Markdown summary to an HTML page and write it to
     city-council/index.html. Returns the path written.
@@ -198,47 +220,91 @@ def write_html(meeting_title: str, summary_markdown: str, agenda_url: str) -> Pa
     now = datetime.now(timezone.utc)
     updated_str = now.strftime("%-d %B %Y at %-I:%M %p UTC")
 
+    page_title = (
+        f"Sausalito City Council — Meeting {meeting_date} Agenda"
+        if meeting_date
+        else "Sausalito City Council — Agenda"
+    )
+
+    is_pdf = "pdf" in source_url.lower() or source_url.lower().endswith(".pdf")
+    pdf_label = "Download full agenda PDF" if is_pdf else "View full agenda"
+    pdf_icon = "📄"
+
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sausalito City Council — Agenda Summary</title>
+  <title>{page_title}</title>
   <style>
     *, *::before, *::after {{ box-sizing: border-box; margin: 0; padding: 0; }}
 
     body {{
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
-      background: #f5f7fa;
+      background: #f0f4f8;
       color: #1a2332;
       line-height: 1.65;
     }}
 
+    /* ── Header ── */
+    .site-header {{
+      background: linear-gradient(135deg, #0c3547 0%, #1a6b8a 55%, #2eb8b8 100%);
+      color: white;
+      padding: 2.5rem 1.5rem 0;
+      overflow: hidden;
+    }}
+    .header-inner {{
+      max-width: 780px;
+      margin: 0 auto;
+    }}
+    .header-icon {{
+      font-size: 2.8rem;
+      display: block;
+      margin-bottom: 0.4rem;
+    }}
+    .site-header h1 {{
+      font-size: 1.75rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.25);
+    }}
+    .site-header .meeting-label {{
+      font-size: 1rem;
+      opacity: 0.85;
+      margin-top: 0.3rem;
+      font-weight: 400;
+    }}
+    .wave {{
+      display: block;
+      width: 100%;
+      margin-top: 1.75rem;
+    }}
+
+    /* ── PDF link bar ── */
+    .pdf-bar {{
+      background: #e8f4f8;
+      border-bottom: 1px solid #bee3f8;
+      padding: 0.6rem 1.5rem;
+    }}
+    .pdf-bar-inner {{
+      max-width: 780px;
+      margin: 0 auto;
+      font-size: 0.9rem;
+    }}
+    .pdf-bar a {{
+      color: #1a6b8a;
+      text-decoration: none;
+      font-weight: 600;
+    }}
+    .pdf-bar a:hover {{ text-decoration: underline; }}
+
+    /* ── Content ── */
     .page {{
       max-width: 780px;
       margin: 0 auto;
-      padding: 2.5rem 1.5rem 4rem;
+      padding: 2rem 1.5rem 4rem;
     }}
 
-    /* ── Header ── */
-    .site-header {{
-      border-bottom: 3px solid #1d4ed8;
-      padding-bottom: 1.25rem;
-      margin-bottom: 2rem;
-    }}
-    .site-header h1 {{
-      font-size: 1.6rem;
-      font-weight: 700;
-      color: #1d4ed8;
-      letter-spacing: -0.02em;
-    }}
-    .site-header .subtitle {{
-      font-size: 0.95rem;
-      color: #64748b;
-      margin-top: 0.2rem;
-    }}
-
-    /* ── Summary content ── */
     .summary h2 {{
       font-size: 1.1rem;
       font-weight: 700;
@@ -247,41 +313,31 @@ def write_html(meeting_title: str, summary_markdown: str, agenda_url: str) -> Pa
       padding-bottom: 0.35rem;
       border-bottom: 1px solid #e2e8f0;
     }}
-
     .summary h2:first-child {{ margin-top: 0; }}
 
-    .summary p {{
-      margin: 0.6rem 0;
-      color: #334155;
-    }}
+    .summary p {{ margin: 0.6rem 0; color: #334155; }}
 
     .summary ul, .summary ol {{
       margin: 0.5rem 0 0.5rem 1.4rem;
       color: #334155;
     }}
+    .summary li {{ margin: 0.3rem 0; }}
 
-    .summary li {{
-      margin: 0.3rem 0;
-    }}
+    .summary strong {{ color: #1e293b; font-weight: 600; }}
 
-    .summary strong {{
-      color: #1e293b;
-      font-weight: 600;
-    }}
+    .summary a {{ color: #1a6b8a; text-decoration: none; }}
+    .summary a:hover {{ text-decoration: underline; }}
 
     /* ── Topics of Interest callout ── */
     .topics-callout {{
       background: #eff6ff;
       border-left: 4px solid #1d4ed8;
-      border-radius: 0 6px 6px 0;
+      border-radius: 0 8px 8px 0;
       padding: 1rem 1.25rem;
       margin-top: 0.6rem;
     }}
-
-    .topics-callout p,
-    .topics-callout li {{
-      color: #1e3a5f;
-    }}
+    .topics-callout p, .topics-callout li {{ color: #1e3a5f; }}
+    .topics-callout a {{ color: #1d4ed8; }}
 
     /* ── Footer ── */
     .page-footer {{
@@ -290,62 +346,79 @@ def write_html(meeting_title: str, summary_markdown: str, agenda_url: str) -> Pa
       border-top: 1px solid #e2e8f0;
       font-size: 0.82rem;
       color: #94a3b8;
-      line-height: 1.6;
+      line-height: 1.8;
     }}
-
-    .page-footer a {{
-      color: #1d4ed8;
-      text-decoration: none;
-    }}
-
-    .page-footer a:hover {{
-      text-decoration: underline;
-    }}
+    .page-footer a {{ color: #1a6b8a; text-decoration: none; }}
+    .page-footer a:hover {{ text-decoration: underline; }}
 
     @media (max-width: 600px) {{
-      .page {{ padding: 1.5rem 1rem 3rem; }}
-      .site-header h1 {{ font-size: 1.3rem; }}
+      .site-header h1 {{ font-size: 1.35rem; }}
+      .page {{ padding: 1.25rem 1rem 3rem; }}
     }}
   </style>
 </head>
 <body>
-  <div class="page">
-    <header class="site-header">
-      <h1>Sausalito City Council</h1>
-      <p class="subtitle">AI-generated agenda summary &mdash; cycling, pedestrian safety &amp; housing highlights</p>
-    </header>
 
+  <header class="site-header">
+    <div class="header-inner">
+      <span class="header-icon">⚓</span>
+      <h1>Sausalito City Council</h1>
+      <p class="meeting-label">{(meeting_date + " Agenda") if meeting_date else "Agenda"}</p>
+    </div>
+    <!-- Wave transition to page background -->
+    <svg class="wave" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 50" preserveAspectRatio="none">
+      <path d="M0,25 C150,50 350,0 600,25 C850,50 1050,0 1200,25 L1200,50 L0,50 Z" fill="#f0f4f8"/>
+    </svg>
+  </header>
+
+  <div class="pdf-bar">
+    <div class="pdf-bar-inner">
+      {pdf_icon} <a href="{source_url}">{pdf_label}</a>
+    </div>
+  </div>
+
+  <div class="page">
     <div class="summary" id="summary">
       {content_html}
     </div>
 
     <script>
-      // Wrap the Topics of Interest section content in a callout box
-      const headings = document.querySelectorAll('#summary h2');
-      headings.forEach(h2 => {{
+      // Wrap Topics of Interest content in callout box
+      document.querySelectorAll('#summary h2').forEach(h2 => {{
         if (h2.textContent.includes('Topics of Interest')) {{
           const wrapper = document.createElement('div');
           wrapper.className = 'topics-callout';
+          const siblings = [];
           let node = h2.nextSibling;
-          const collected = [];
           while (node) {{
             const next = node.nextSibling;
             if (node.nodeType === 1 && node.tagName === 'H2') break;
-            collected.push(node);
+            siblings.push(node);
             node = next;
           }}
           h2.after(wrapper);
-          collected.forEach(n => wrapper.appendChild(n));
+          siblings.forEach(n => wrapper.appendChild(n));
+        }}
+      }});
+
+      // Prepend topic icons to bold category labels inside the callout
+      const icons = {{ Cycling: '🚲', Pedestrian: '🚶', Housing: '🏠' }};
+      document.querySelectorAll('.topics-callout strong').forEach(el => {{
+        for (const [label, icon] of Object.entries(icons)) {{
+          if (el.textContent.trim().startsWith(label)) {{
+            el.textContent = icon + '\u00a0' + el.textContent;
+            break;
+          }}
         }}
       }});
     </script>
 
     <footer class="page-footer">
       <p>Last updated: {updated_str}</p>
-      <p>Source: <a href="{agenda_url}">{agenda_url}</a></p>
-      <p>Summary generated by Claude AI. Always verify details with the <a href="{agenda_url}">official agenda</a>.</p>
+      <p>Contact: <a href="mailto:jorisvanmens@gmail.com">jorisvanmens@gmail.com</a></p>
     </footer>
   </div>
+
 </body>
 </html>
 """
@@ -392,7 +465,7 @@ def main() -> None:
 
     # ── Step 2: Fetch and parse the agenda ───────────────────────────────────
     try:
-        meeting_title, agenda_text = fetch_agenda_text(agenda_url)
+        meeting_title, agenda_text, source_url = fetch_agenda_text(agenda_url)
     except requests.HTTPError as exc:
         print(f"HTTP error fetching agenda ({exc.response.status_code}): {exc}", file=sys.stderr)
         sys.exit(1)
@@ -400,7 +473,10 @@ def main() -> None:
         print(f"Error fetching agenda: {exc}", file=sys.stderr)
         sys.exit(1)
 
+    meeting_date = extract_meeting_date(agenda_text)
     print(f"Meeting : {meeting_title}")
+    print(f"Date    : {meeting_date or '(not found)'}")
+    print(f"Source  : {source_url}")
     print(f"Agenda  : {len(agenda_text):,} characters extracted\n")
 
     # ── Step 3: Summarize with Claude ────────────────────────────────────────
@@ -419,7 +495,7 @@ def main() -> None:
         sys.exit(1)
 
     # ── Step 4: Write HTML ────────────────────────────────────────────────────
-    html_path = write_html(meeting_title, summary, agenda_url)
+    html_path = write_html(meeting_title, summary, agenda_url, source_url, meeting_date)
     print(f"HTML written to: {html_path}\n")
 
     # ── Step 5: Print to stdout ───────────────────────────────────────────────
