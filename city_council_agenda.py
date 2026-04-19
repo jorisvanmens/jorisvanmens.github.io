@@ -83,11 +83,31 @@ def _get(url: str) -> requests.Response:
         return requests.get(url, headers=HEADERS, timeout=30, verify=False)
 
 
+def _pdf_links(pdf) -> list[str]:
+    """Extract all unique hyperlink URLs from PDF annotations."""
+    seen, links = set(), []
+    for page in pdf.pages:
+        for annot in page.annots or []:
+            uri = annot.get("uri")
+            if not uri:
+                data = annot.get("data") or {}
+                raw = data.get("URI", b"") if isinstance(data, dict) else b""
+                uri = raw.decode("utf-8", errors="ignore") if isinstance(raw, bytes) else raw
+            if uri and isinstance(uri, str) and uri.startswith("http") and uri not in seen:
+                seen.add(uri)
+                links.append(uri)
+    return links
+
+
 def _parse_pdf(data: bytes) -> tuple[str, str]:
-    """Extract (meeting_title, text) from raw PDF bytes using pdfplumber."""
+    """Extract (meeting_title, text) from raw PDF bytes using pdfplumber.
+    Appends a list of hyperlinks found in the PDF so Claude can reference them."""
     with pdfplumber.open(io.BytesIO(data)) as pdf:
         pages = [page.extract_text() or "" for page in pdf.pages]
+        links = _pdf_links(pdf)
     text = re.sub(r"\n{3,}", "\n\n", "\n\n".join(pages))
+    if links:
+        text += "\n\nLINKS EMBEDDED IN AGENDA PDF:\n" + "\n".join(f"- {u}" for u in links)
     title = next((ln.strip() for ln in text.splitlines() if ln.strip()), "City Council Meeting")
     return title, text
 
@@ -163,7 +183,10 @@ def summarize_agenda(meeting_title: str, agenda_text: str, agenda_url: str) -> s
 Produce a summary with exactly three sections:
 
 ## 1. Meeting Overview
-State the meeting date, time, and location. Then write 2–3 sentences summarizing the overall themes or most significant items on the agenda.
+State the meeting date and time(s) concisely on one line, e.g.:
+"Tuesday April 21, 2026 · Special Meeting (Closed Session) 3:30 PM · Regular Meeting 5:00 PM"
+Do NOT include the meeting location or Zoom/call-in details.
+Then write 2–3 sentences summarizing the overall themes or most significant items.
 
 ## 2. Topics of Interest
 Identify every agenda item related to any of the following, even if only tangentially:
@@ -174,7 +197,7 @@ Identify every agenda item related to any of the following, even if only tangent
 For each relevant item include:
 - The agenda item number and a brief description
 - What action is being requested (vote, first reading, discussion only, public hearing, etc.)
-- A **Links** sub-list of relevant URLs: include any document URLs or project pages explicitly mentioned in the agenda text, plus any well-known accurate external resources (sausalito.gov, Marin County, Caltrans, CA HCD, etc.). Do NOT fabricate URLs.
+- A **Links** sub-list. Include staff reports and any other documents listed under "LINKS EMBEDDED IN AGENDA PDF" that are relevant to this item, plus well-known external resources you are confident are accurate (sausalito.gov, Marin County, Caltrans, CA HCD, etc.). Format every link as descriptive Markdown text — [Staff Report](url), [Project Website](url) — never show a raw URL. Do NOT fabricate URLs.
 
 If none of the three topics appear on the agenda, state that clearly.
 
@@ -250,8 +273,7 @@ def write_html(
     .site-header {{
       background: linear-gradient(135deg, #0c3547 0%, #1a6b8a 55%, #2eb8b8 100%);
       color: white;
-      padding: 2.5rem 1.5rem 0;
-      overflow: hidden;
+      padding: 2.5rem 1.5rem 2rem;
     }}
     .header-inner {{
       max-width: 780px;
@@ -274,12 +296,6 @@ def write_html(
       margin-top: 0.3rem;
       font-weight: 400;
     }}
-    .wave {{
-      display: block;
-      width: 100%;
-      margin-top: 1.75rem;
-    }}
-
     /* ── PDF link bar ── */
     .pdf-bar {{
       background: #e8f4f8;
@@ -363,12 +379,8 @@ def write_html(
     <div class="header-inner">
       <span class="header-icon">⚓</span>
       <h1>Sausalito City Council</h1>
-      <p class="meeting-label">{(meeting_date + " Agenda") if meeting_date else "Agenda"}</p>
+      <p class="meeting-label">{(meeting_date + " Meeting Agenda") if meeting_date else "Meeting Agenda"} (summary focused on items affecting cycling, pedestrians and housing)</p>
     </div>
-    <!-- Wave transition to page background -->
-    <svg class="wave" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 50" preserveAspectRatio="none">
-      <path d="M0,25 C150,50 350,0 600,25 C850,50 1050,0 1200,25 L1200,50 L0,50 Z" fill="#f0f4f8"/>
-    </svg>
   </header>
 
   <div class="pdf-bar">
