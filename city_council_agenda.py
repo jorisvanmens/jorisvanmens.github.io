@@ -21,6 +21,7 @@ Requires:
 
 import argparse
 import io
+import os
 import re
 import sys
 from datetime import datetime, timezone
@@ -39,6 +40,15 @@ AGENDA_URL_TEMPLATE = f"{GRANICUS_BASE}/AgendaViewer.php?view_id=6&event_id={{ev
 
 HTML_OUTPUT_PATH = Path(__file__).parent / "city-council" / "index.html"
 LAST_EVENT_ID_PATH = Path(__file__).parent / "city-council" / "last_event_id"
+
+# ── Email settings ────────────────────────────────────────────────────────────
+# SENDER_EMAIL must be verified in SendGrid (Settings → Sender Authentication).
+SENDER_EMAIL = "jorisvanmens@gmail.com"
+RECIPIENTS = [
+    "jorisvanmens@gmail.com",
+    # Add or remove recipients here, one per line:
+    # "another@example.com",
+]
 
 HEADERS = {
     "User-Agent": (
@@ -454,6 +464,154 @@ def write_html(
     return HTML_OUTPUT_PATH
 
 
+def _build_email_body(
+    summary_markdown: str, source_url: str, meeting_date: str, updated_str: str
+) -> str:
+    """
+    Build an email-safe HTML version of the summary.
+    Uses inline styles and table layout (no JS, no CSS variables, no gradients).
+    Pre-renders the Topics of Interest callout and topic icons that the web page
+    handles via JavaScript.
+    """
+    content_html = md_lib.markdown(summary_markdown, extensions=["extra"])
+
+    # Inject topic icons directly into the HTML before BS4 parses it
+    for label, icon in [("Cycling", "🚲"), ("Pedestrian", "🚶"), ("Housing", "🏠")]:
+        content_html = content_html.replace(
+            f"<strong>{label}", f"<strong>{icon}&nbsp;{label}"
+        )
+
+    # Wrap Topics of Interest section in a callout div
+    soup = BeautifulSoup(content_html, "html.parser")
+    callout_style = (
+        "background:#eff6ff; border-left:4px solid #1d4ed8; "
+        "border-radius:0 6px 6px 0; padding:12px 16px; margin:8px 0;"
+    )
+    for h2 in soup.find_all("h2"):
+        if "Topics of Interest" in h2.get_text():
+            wrapper = soup.new_tag("div", style=callout_style)
+            to_move = []
+            node = h2.next_sibling
+            while node:
+                nxt = node.next_sibling
+                if getattr(node, "name", None) == "h2":
+                    break
+                to_move.append(node)
+                node = nxt
+            h2.insert_after(wrapper)
+            for n in to_move:
+                wrapper.append(n.extract())
+
+    # Apply inline styles to every element
+    STYLES = {
+        "h2": (
+            "font-size:15px; font-weight:700; color:#1e293b; "
+            "margin:20px 0 6px; padding-bottom:4px; border-bottom:1px solid #e2e8f0;"
+        ),
+        "p":  "margin:6px 0; color:#334155; font-size:14px; line-height:1.6;",
+        "ul": "margin:6px 0 6px 20px; color:#334155; font-size:14px;",
+        "ol": "margin:6px 0 6px 20px; color:#334155; font-size:14px;",
+        "li": "margin:3px 0; font-size:14px; color:#334155;",
+        "a":  "color:#1a6b8a; text-decoration:none;",
+        "strong": "color:#1e293b; font-weight:600;",
+    }
+    for tag, style in STYLES.items():
+        for el in soup.find_all(tag):
+            el["style"] = (el.get("style", "") + " " + style).strip()
+
+    content_html = str(soup)
+
+    is_pdf = "pdf" in source_url.lower()
+    pdf_label = "Download full agenda PDF" if is_pdf else "View full agenda"
+    meeting_label = f"{meeting_date} Meeting Agenda" if meeting_date else "Meeting Agenda"
+    subtitle = f"{meeting_label} (summary focused on items affecting cycling, pedestrians and housing)"
+
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sausalito City Council — {meeting_label}</title>
+</head>
+<body style="margin:0; padding:0; background:#f0f4f8; font-family:Arial,Helvetica,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f0f4f8;">
+    <tr>
+      <td align="center" style="padding:20px 10px;">
+        <table width="600" cellpadding="0" cellspacing="0" border="0"
+               style="max-width:600px; width:100%; background:#ffffff;
+                      border-radius:8px; overflow:hidden;
+                      box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+          <!-- Header -->
+          <tr>
+            <td style="background:#0c3547; padding:24px 28px;">
+              <div style="font-size:26px; margin-bottom:6px;">⚓</div>
+              <h1 style="margin:0; color:#ffffff; font-size:20px; font-weight:800;
+                         letter-spacing:-0.3px; font-family:Arial,Helvetica,sans-serif;">
+                Sausalito City Council
+              </h1>
+              <p style="margin:6px 0 0; color:rgba(255,255,255,0.85); font-size:13px;
+                        line-height:1.4; font-family:Arial,Helvetica,sans-serif;">
+                {subtitle}
+              </p>
+            </td>
+          </tr>
+          <!-- PDF link bar -->
+          <tr>
+            <td style="background:#e8f4f8; padding:10px 28px;
+                       border-bottom:1px solid #bee3f8; font-size:13px;
+                       font-family:Arial,Helvetica,sans-serif;">
+              📄 <a href="{source_url}"
+                    style="color:#1a6b8a; font-weight:600; text-decoration:none;"
+                  >{pdf_label}</a>
+            </td>
+          </tr>
+          <!-- Summary content -->
+          <tr>
+            <td style="padding:20px 28px 16px; font-family:Arial,Helvetica,sans-serif;">
+              {content_html}
+            </td>
+          </tr>
+          <!-- Footer -->
+          <tr>
+            <td style="padding:14px 28px; border-top:1px solid #e2e8f0;
+                       font-size:11px; color:#94a3b8;
+                       font-family:Arial,Helvetica,sans-serif;">
+              Last updated: {updated_str} &nbsp;·&nbsp;
+              <a href="mailto:{SENDER_EMAIL}"
+                 style="color:#1a6b8a; text-decoration:none;">{SENDER_EMAIL}</a>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>"""
+
+
+def send_email(subject: str, html_body: str) -> None:
+    """
+    Send the agenda summary as an HTML email via SendGrid.
+    Silently skips if SENDGRID_API_KEY is not set.
+    """
+    api_key = os.environ.get("SENDGRID_API_KEY")
+    if not api_key:
+        print("SENDGRID_API_KEY not set — skipping email.")
+        return
+
+    from sendgrid import SendGridAPIClient
+    from sendgrid.helpers.mail import Mail
+
+    message = Mail(
+        from_email=SENDER_EMAIL,
+        to_emails=RECIPIENTS,
+        subject=subject,
+        html_content=html_body,
+    )
+    response = SendGridAPIClient(api_key).send(message)
+    print(f"Email sent to {len(RECIPIENTS)} recipient(s). Status: {response.status_code}")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=(
@@ -545,7 +703,16 @@ def main() -> None:
         save_event_id(current_event_id)
         print(f"Saved event_id={current_event_id} to {LAST_EVENT_ID_PATH}\n")
 
-    # ── Step 5: Print to stdout ───────────────────────────────────────────────
+    # ── Step 5: Send email ────────────────────────────────────────────────────
+    now_utc = datetime.now(timezone.utc)
+    updated_str = now_utc.strftime("%-d %B %Y at %-I:%M %p UTC")
+    subject = (
+        f"Sausalito City Council — {meeting_date + ' ' if meeting_date else ''}Meeting Agenda Summary"
+    )
+    email_html = _build_email_body(summary, source_url, meeting_date, updated_str)
+    send_email(subject, email_html)
+
+    # ── Step 6: Print to stdout ───────────────────────────────────────────────
     print("=" * 60)
     print("  SAUSALITO CITY COUNCIL — AGENDA SUMMARY")
     print("=" * 60)
