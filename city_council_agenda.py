@@ -20,6 +20,7 @@ Requires:
 """
 
 import argparse
+import io
 import re
 import sys
 from datetime import datetime, timezone
@@ -27,7 +28,9 @@ from pathlib import Path
 
 import anthropic
 import markdown as md_lib
+import pdfplumber
 import requests
+import urllib3
 from bs4 import BeautifulSoup
 
 GRANICUS_BASE = "https://sausalito.granicus.com"
@@ -70,38 +73,60 @@ def find_next_agenda_url() -> str:
     return AGENDA_URL_TEMPLATE.format(event_id=event_id)
 
 
-def fetch_agenda_text(agenda_url: str) -> tuple[str, str]:
-    """
-    Fetch a Granicus AgendaViewer page and extract the readable agenda text.
-    Returns (meeting_title, agenda_text).
-    """
-    print(f"Fetching agenda from:\n  {agenda_url}")
-    resp = requests.get(agenda_url, headers=HEADERS, timeout=20)
-    resp.raise_for_status()
+def _get(url: str) -> requests.Response:
+    """GET a URL, retrying with SSL verification disabled on certificate errors.
+    Granicus redirects agendas to S3 URLs whose bucket names contain underscores,
+    which causes hostname validation to fail on some runners."""
+    try:
+        return requests.get(url, headers=HEADERS, timeout=30)
+    except requests.exceptions.SSLError:
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+        return requests.get(url, headers=HEADERS, timeout=30, verify=False)
 
+
+def _parse_pdf(data: bytes) -> tuple[str, str]:
+    """Extract (meeting_title, text) from raw PDF bytes using pdfplumber."""
+    with pdfplumber.open(io.BytesIO(data)) as pdf:
+        pages = [page.extract_text() or "" for page in pdf.pages]
+    text = re.sub(r"\n{3,}", "\n\n", "\n\n".join(pages))
+    # Use the first non-empty line as the title
+    title = next((ln.strip() for ln in text.splitlines() if ln.strip()), "City Council Meeting")
+    return title, text
+
+
+def _parse_html(resp: requests.Response) -> tuple[str, str]:
+    """Extract (meeting_title, text) from an HTML response."""
     soup = BeautifulSoup(resp.text, "html.parser")
-
-    # Strip noise
     for tag in soup(["script", "style", "nav", "header", "footer", "noscript"]):
         tag.decompose()
-
-    # Extract a meaningful meeting title
     title_tag = soup.find("h1") or soup.find("h2") or soup.find("title")
     meeting_title = title_tag.get_text(strip=True) if title_tag else "City Council Meeting"
-
-    # Find the main content block; Granicus uses various IDs/classes
     main = (
         soup.find(id=re.compile(r"agenda|content|main", re.I))
         or soup.find("div", class_=re.compile(r"agenda|content|main", re.I))
         or soup.find("body")
     )
-
     raw_text = main.get_text(separator="\n", strip=True)
+    return meeting_title, re.sub(r"\n{3,}", "\n\n", raw_text)
 
-    # Collapse runs of blank lines into a single blank line
-    agenda_text = re.sub(r"\n{3,}", "\n\n", raw_text)
 
-    return meeting_title, agenda_text
+def fetch_agenda_text(agenda_url: str) -> tuple[str, str]:
+    """
+    Fetch a Granicus AgendaViewer URL and return (meeting_title, agenda_text).
+    Handles both HTML pages and PDF redirects (including S3 SSL quirks).
+    """
+    print(f"Fetching agenda from:\n  {agenda_url}")
+    resp = _get(agenda_url)
+    resp.raise_for_status()
+
+    content_type = resp.headers.get("Content-Type", "")
+    is_pdf = "pdf" in content_type or resp.url.lower().endswith(".pdf")
+
+    if is_pdf:
+        print(f"  → PDF detected ({resp.url}), extracting text with pdfplumber")
+        return _parse_pdf(resp.content)
+    else:
+        return _parse_html(resp)
 
 
 def summarize_agenda(meeting_title: str, agenda_text: str, agenda_url: str) -> str:
