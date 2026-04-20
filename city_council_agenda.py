@@ -43,7 +43,7 @@ LAST_EVENT_ID_PATH = Path(__file__).parent / "city-council" / "last_event_id"
 
 # ── Email settings ────────────────────────────────────────────────────────────
 # SENDER_EMAIL must be verified in SendGrid (Settings → Sender Authentication).
-SENDER_EMAIL = "jorisvanmens@gmail.com"
+SENDER_EMAIL = "jorisvanmens+app@gmail.com"
 
 # Recipients are read from the EMAIL_RECIPIENTS environment variable (a GitHub
 # Actions secret) so they are never stored in this public repository.
@@ -615,8 +615,20 @@ def send_email(subject: str, html_body: str) -> None:
         subject=subject,
         html_content=html_body,
     )
-    response = SendGridAPIClient(api_key).send(message)
-    print(f"Email sent to {len(recipients)} recipient(s). Status: {response.status_code}")
+    try:
+        response = SendGridAPIClient(api_key).send(message)
+        print(f"Email sent to {len(recipients)} recipient(s). Status: {response.status_code}")
+    except Exception as exc:
+        status = getattr(exc, "status_code", None)
+        if status == 403:
+            print(
+                f"SendGrid 403 Forbidden — '{SENDER_EMAIL}' is probably not yet verified.\n"
+                "Fix: SendGrid dashboard → Settings → Sender Authentication → "
+                "verify the sender address.",
+                file=sys.stderr,
+            )
+        else:
+            print(f"Failed to send email: {exc}", file=sys.stderr)
 
 
 def main() -> None:
