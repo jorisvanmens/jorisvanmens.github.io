@@ -43,7 +43,7 @@ LAST_EVENT_ID_PATH = Path(__file__).parent / "city-council" / "last_event_id"
 
 # ── Email settings ────────────────────────────────────────────────────────────
 # SENDER_EMAIL must be verified in SendGrid (Settings → Sender Authentication).
-SENDER_EMAIL = "jorisvanmens+app@gmail.com"
+SENDER_EMAIL = "city-council-app@jorisvanmens.com"
 
 # Recipients are read from the EMAIL_RECIPIENTS environment variable (a GitHub
 # Actions secret) so they are never stored in this public repository.
