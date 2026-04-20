@@ -180,9 +180,9 @@ def fetch_agenda_text(agenda_url: str) -> tuple[str, str, str, bytes | None]:
 
 
 def save_agenda_pdf(event_id: str, pdf_bytes: bytes) -> Path:
-    """Save the raw agenda PDF to city-council/agendas/event_{event_id}.pdf."""
+    """Save the raw agenda PDF to city-council/agendas/event_{event_id}_initial.pdf."""
     AGENDAS_DIR.mkdir(exist_ok=True)
-    path = AGENDAS_DIR / f"event_{event_id}.pdf"
+    path = AGENDAS_DIR / f"event_{event_id}_initial.pdf"
     path.write_bytes(pdf_bytes)
     return path
 
@@ -195,7 +195,7 @@ def load_stored_pdf() -> tuple[str, str, str, str, bytes]:
     """
     if not AGENDAS_DIR.exists():
         raise FileNotFoundError(f"Agendas directory not found: {AGENDAS_DIR}")
-    pdfs = sorted(AGENDAS_DIR.glob("event_*.pdf"), key=lambda p: p.stat().st_mtime, reverse=True)
+    pdfs = sorted(AGENDAS_DIR.glob("event_*_initial.pdf"), key=lambda p: p.stat().st_mtime, reverse=True)
     if not pdfs:
         raise FileNotFoundError(f"No saved PDFs found in {AGENDAS_DIR}")
 
@@ -204,7 +204,7 @@ def load_stored_pdf() -> tuple[str, str, str, str, bytes]:
     pdf_bytes = pdf_path.read_bytes()
     title, text = _parse_pdf(pdf_bytes)
 
-    match = re.match(r"event_(\d+)\.pdf", pdf_path.name)
+    match = re.match(r"event_(\d+)_initial\.pdf", pdf_path.name)
     event_id = match.group(1) if match else ""
     source_url = AGENDA_URL_TEMPLATE.format(event_id=event_id) if event_id else str(pdf_path)
 
