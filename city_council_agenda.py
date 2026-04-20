@@ -43,7 +43,7 @@ LAST_EVENT_ID_PATH = Path(__file__).parent / "city-council" / "last_event_id"
 
 # ── Email settings ────────────────────────────────────────────────────────────
 # SENDER_EMAIL must be verified in SendGrid (Settings → Sender Authentication).
-SENDER_EMAIL = ("Sausalito City Council", "city-council-app@jorisvanmens.com")
+SENDER_EMAIL = ("City Council App", "city-council-app@jorisvanmens.com")
 
 # Recipients are read from the EMAIL_RECIPIENTS environment variable (a GitHub
 # Actions secret) so they are never stored in this public repository.
@@ -210,8 +210,8 @@ Produce a summary with exactly three sections:
 
 ## 1. Meeting Overview
 State the meeting date and time(s) concisely on one line, e.g.:
-"Tuesday April 21, 2026 · Special Meeting (Closed Session) 3:30 PM · Regular Meeting 5:00 PM"
-Do NOT include the meeting location or Zoom/call-in details.
+"*Tuesday April 21, 2026 · Special Meeting (Closed Session) 3:30 PM · Regular Meeting 5:00 PM*"
+Wrap it in Markdown italics as shown. Do NOT include the meeting location or Zoom/call-in details.
 Then write 2–3 sentences summarizing the overall themes or most significant items.
 
 ## 2. Topics of Interest
@@ -270,9 +270,9 @@ def write_html(
     updated_str = now.strftime("%-d %B %Y at %-I:%M %p UTC")
 
     page_title = (
-        f"Sausalito City Council — Meeting {meeting_date} Agenda"
+        f"Sausalito City Council: Upcoming Meeting — {meeting_date}"
         if meeting_date
-        else "Sausalito City Council — Agenda"
+        else "Sausalito City Council: Upcoming Meeting"
     )
 
     is_pdf = "pdf" in source_url.lower() or source_url.lower().endswith(".pdf")
@@ -305,16 +305,14 @@ def write_html(
       max-width: 780px;
       margin: 0 auto;
     }}
-    .header-icon {{
-      font-size: 2.8rem;
-      display: block;
-      margin-bottom: 0.4rem;
-    }}
     .site-header h1 {{
       font-size: 1.75rem;
       font-weight: 800;
       letter-spacing: -0.02em;
       text-shadow: 0 1px 4px rgba(0,0,0,0.25);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
     }}
     .site-header .meeting-label {{
       font-size: 1rem;
@@ -403,9 +401,8 @@ def write_html(
 
   <header class="site-header">
     <div class="header-inner">
-      <span class="header-icon">⚓</span>
-      <h1>Sausalito City Council</h1>
-      <p class="meeting-label">{(meeting_date + " Meeting Agenda") if meeting_date else "Meeting Agenda"} (summary focused on items affecting cycling, pedestrians and housing)</p>
+      <h1>⚓ Sausalito City Council: Upcoming Meeting</h1>
+      <p class="meeting-label">{(meeting_date + " Meeting Agenda Summary") if meeting_date else "Meeting Agenda Summary"}</p>
     </div>
   </header>
 
@@ -525,15 +522,15 @@ def _build_email_body(
 
     is_pdf = "pdf" in source_url.lower()
     pdf_label = "Download full agenda PDF" if is_pdf else "View full agenda"
-    meeting_label = f"{meeting_date} Meeting Agenda" if meeting_date else "Meeting Agenda"
-    subtitle = f"{meeting_label} (summary focused on items affecting cycling, pedestrians and housing)"
+    meeting_label = f"{meeting_date} Meeting Agenda Summary" if meeting_date else "Meeting Agenda Summary"
+    subtitle = meeting_label
 
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sausalito City Council — {meeting_label}</title>
+  <title>Sausalito City Council: Upcoming Meeting — {meeting_label}</title>
 </head>
 <body style="margin:0; padding:0; background:#f0f4f8; font-family:Arial,Helvetica,sans-serif;">
   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f0f4f8;">
@@ -546,10 +543,9 @@ def _build_email_body(
           <!-- Header -->
           <tr>
             <td style="background:#0c3547; padding:24px 28px;">
-              <div style="font-size:26px; margin-bottom:6px;">⚓</div>
               <h1 style="margin:0; color:#ffffff; font-size:20px; font-weight:800;
                          letter-spacing:-0.3px; font-family:Arial,Helvetica,sans-serif;">
-                Sausalito City Council
+                ⚓ Sausalito City Council: Upcoming Meeting
               </h1>
               <p style="margin:6px 0 0; color:rgba(255,255,255,0.85); font-size:13px;
                         line-height:1.4; font-family:Arial,Helvetica,sans-serif;">
