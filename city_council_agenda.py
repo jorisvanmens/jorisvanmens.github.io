@@ -44,11 +44,13 @@ LAST_EVENT_ID_PATH = Path(__file__).parent / "city-council" / "last_event_id"
 # ── Email settings ────────────────────────────────────────────────────────────
 # SENDER_EMAIL must be verified in SendGrid (Settings → Sender Authentication).
 SENDER_EMAIL = "jorisvanmens@gmail.com"
-RECIPIENTS = [
-    "jorisvanmens@gmail.com",
-    # Add or remove recipients here, one per line:
-    # "another@example.com",
-]
+
+# Recipients are read from the EMAIL_RECIPIENTS environment variable (a GitHub
+# Actions secret) so they are never stored in this public repository.
+# Set the secret to a comma-separated list, e.g.: "a@example.com,b@example.com"
+def get_recipients() -> list[str]:
+    raw = os.environ.get("EMAIL_RECIPIENTS", "")
+    return [r.strip() for r in raw.split(",") if r.strip()]
 
 HEADERS = {
     "User-Agent": (
@@ -599,17 +601,22 @@ def send_email(subject: str, html_body: str) -> None:
         print("SENDGRID_API_KEY not set — skipping email.")
         return
 
+    recipients = get_recipients()
+    if not recipients:
+        print("EMAIL_RECIPIENTS not set — skipping email.")
+        return
+
     from sendgrid import SendGridAPIClient
     from sendgrid.helpers.mail import Mail
 
     message = Mail(
         from_email=SENDER_EMAIL,
-        to_emails=RECIPIENTS,
+        to_emails=recipients,
         subject=subject,
         html_content=html_body,
     )
     response = SendGridAPIClient(api_key).send(message)
-    print(f"Email sent to {len(RECIPIENTS)} recipient(s). Status: {response.status_code}")
+    print(f"Email sent to {len(recipients)} recipient(s). Status: {response.status_code}")
 
 
 def main() -> None:
