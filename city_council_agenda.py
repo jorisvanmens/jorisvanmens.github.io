@@ -591,37 +591,48 @@ def send_email(subject: str, html_body: str) -> None:
     """
     api_key = os.environ.get("SENDGRID_API_KEY")
     if not api_key:
-        print("SENDGRID_API_KEY not set — skipping email.")
+        print("Email: SENDGRID_API_KEY not set — skipping.")
         return
 
     recipients = get_recipients()
     if not recipients:
-        print("EMAIL_RECIPIENTS not set — skipping email.")
+        print("Email: EMAIL_RECIPIENTS not set — skipping.")
         return
 
     from sendgrid import SendGridAPIClient
+    from sendgrid.helpers.mail import Email as SgEmail
     from sendgrid.helpers.mail import Mail
 
-    message = Mail(
-        from_email=SENDER_EMAIL,
-        to_emails=recipients,
-        subject=subject,
-        html_content=html_body,
-    )
+    sender_name, sender_addr = SENDER_EMAIL
+    print(f"Email: sending to {len(recipients)} recipient(s)")
+    print(f"  From   : {sender_name} <{sender_addr}>")
+    print(f"  To     : {', '.join(recipients)}")
+    print(f"  Subject: {subject}")
+
     try:
+        message = Mail(
+            from_email=SgEmail(sender_addr, sender_name),
+            to_emails=recipients,
+            subject=subject,
+            html_content=html_body,
+        )
         response = SendGridAPIClient(api_key).send(message)
-        print(f"Email sent to {len(recipients)} recipient(s). Status: {response.status_code}")
+        print(f"Email: sent successfully (HTTP {response.status_code})")
     except Exception as exc:
         status = getattr(exc, "status_code", None)
+        body = getattr(exc, "body", b"")
+        if isinstance(body, bytes):
+            body = body.decode("utf-8", errors="replace")
         if status == 403:
             print(
-                f"SendGrid 403 Forbidden — '{SENDER_EMAIL[1]}' is probably not yet verified.\n"
-                "Fix: SendGrid dashboard → Settings → Sender Authentication → "
-                "verify the sender address.",
+                f"Email: SendGrid 403 Forbidden — '{sender_addr}' may not be verified.\n"
+                "Fix: SendGrid dashboard → Settings → Sender Authentication.",
                 file=sys.stderr,
             )
+        elif status:
+            print(f"Email: SendGrid error {status} — {body or exc}", file=sys.stderr)
         else:
-            print(f"Failed to send email: {exc}", file=sys.stderr)
+            print(f"Email: failed to send — {exc}", file=sys.stderr)
 
 
 def main() -> None:
@@ -721,8 +732,11 @@ def main() -> None:
     subject = (
         f"Sausalito City Council — {meeting_date + ' ' if meeting_date else ''}Meeting Agenda Summary"
     )
-    email_html = _build_email_body(summary, source_url, meeting_date, updated_str)
-    send_email(subject, email_html)
+    try:
+        email_html = _build_email_body(summary, source_url, meeting_date, updated_str)
+        send_email(subject, email_html)
+    except Exception as exc:
+        print(f"Email: unexpected error — {exc}", file=sys.stderr)
 
     # ── Step 6: Print to stdout ───────────────────────────────────────────────
     print("=" * 60)
