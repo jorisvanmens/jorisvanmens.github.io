@@ -43,7 +43,7 @@ LAST_EVENT_ID_PATH = Path(__file__).parent / "city-council" / "last_event_id"
 
 # ── Email settings ────────────────────────────────────────────────────────────
 # SENDER_EMAIL must be verified in SendGrid (Settings → Sender Authentication).
-SENDER_EMAIL = "city-council-app@jorisvanmens.com"
+SENDER_EMAIL = ("City Council App", "city-council-app@jorisvanmens.com")
 
 # Recipients are read from the EMAIL_RECIPIENTS environment variable (a GitHub
 # Actions secret) so they are never stored in this public repository.
@@ -210,15 +210,21 @@ Produce a summary with exactly three sections:
 
 ## 1. Meeting Overview
 State the meeting date and time(s) concisely on one line, e.g.:
-"Tuesday April 21, 2026 · Special Meeting (Closed Session) 3:30 PM · Regular Meeting 5:00 PM"
-Do NOT include the meeting location or Zoom/call-in details.
+"*Tuesday April 21, 2026 · Special Meeting (Closed Session) 3:30 PM · Regular Meeting 5:00 PM*"
+Wrap it in Markdown italics as shown. Do NOT include the meeting location or Zoom/call-in details.
 Then write 2–3 sentences summarizing the overall themes or most significant items.
 
 ## 2. Topics of Interest
-Identify every agenda item related to any of the following, even if only tangentially:
-- **Cycling** — bike lanes, bicycle infrastructure, bike-share, Caltrans roadway projects, multi-use paths, etc.
-- **Pedestrian safety** — sidewalks, crosswalks, traffic calming, speed limits, Vision Zero, school safety zones, ADA accessibility, etc.
-- **Housing** — affordable housing, zoning or general plan amendments, development/subdivision approvals, ADUs, density bonuses, inclusionary requirements, housing element updates, etc.
+Identify every agenda item related to any of the following, even if only tangentially. For each category that has matching items, use the exact Markdown sub-header shown below:
+
+### 🚲 Cycling
+Covers: bike lanes, bicycle infrastructure, bike-share, Caltrans roadway projects, multi-use paths, etc.
+
+### 🚶 Pedestrian Safety
+Covers: sidewalks, crosswalks, traffic calming, speed limits, Vision Zero, school safety zones, ADA accessibility, etc.
+
+### 🏠 Housing
+Covers: affordable housing, zoning or general plan amendments, development/subdivision approvals, ADUs, density bonuses, inclusionary requirements, housing element updates, etc.
 
 For each relevant item include:
 - The agenda item number and a brief description
@@ -270,9 +276,9 @@ def write_html(
     updated_str = now.strftime("%-d %B %Y at %-I:%M %p UTC")
 
     page_title = (
-        f"Sausalito City Council — Meeting {meeting_date} Agenda"
+        f"Sausalito City Council: Upcoming Meeting — {meeting_date}"
         if meeting_date
-        else "Sausalito City Council — Agenda"
+        else "Sausalito City Council: Upcoming Meeting"
     )
 
     is_pdf = "pdf" in source_url.lower() or source_url.lower().endswith(".pdf")
@@ -305,16 +311,14 @@ def write_html(
       max-width: 780px;
       margin: 0 auto;
     }}
-    .header-icon {{
-      font-size: 2.8rem;
-      display: block;
-      margin-bottom: 0.4rem;
-    }}
     .site-header h1 {{
       font-size: 1.75rem;
       font-weight: 800;
       letter-spacing: -0.02em;
       text-shadow: 0 1px 4px rgba(0,0,0,0.25);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
     }}
     .site-header .meeting-label {{
       font-size: 1rem;
@@ -356,6 +360,12 @@ def write_html(
       border-bottom: 1px solid #e2e8f0;
     }}
     .summary h2:first-child {{ margin-top: 0; }}
+    .summary h3 {{
+      font-size: 1rem;
+      font-weight: 700;
+      color: #1e3a5f;
+      margin: 1.2rem 0 0.4rem;
+    }}
 
     .summary p {{ margin: 0.6rem 0; color: #334155; }}
 
@@ -403,9 +413,8 @@ def write_html(
 
   <header class="site-header">
     <div class="header-inner">
-      <span class="header-icon">⚓</span>
-      <h1>Sausalito City Council</h1>
-      <p class="meeting-label">{(meeting_date + " Meeting Agenda") if meeting_date else "Meeting Agenda"} (summary focused on items affecting cycling, pedestrians and housing)</p>
+      <h1>⚓ Sausalito City Council: Upcoming Meeting</h1>
+      <p class="meeting-label">{(meeting_date + " Meeting Agenda Summary") if meeting_date else "Meeting Agenda Summary"}</p>
     </div>
   </header>
 
@@ -439,16 +448,6 @@ def write_html(
         }}
       }});
 
-      // Prepend topic icons to bold category labels inside the callout
-      const icons = {{ Cycling: '🚲', Pedestrian: '🚶', Housing: '🏠' }};
-      document.querySelectorAll('.topics-callout strong').forEach(el => {{
-        for (const [label, icon] of Object.entries(icons)) {{
-          if (el.textContent.trim().startsWith(label)) {{
-            el.textContent = icon + '\u00a0' + el.textContent;
-            break;
-          }}
-        }}
-      }});
     </script>
 
     <footer class="page-footer">
@@ -477,12 +476,6 @@ def _build_email_body(
     """
     content_html = md_lib.markdown(summary_markdown, extensions=["extra"])
 
-    # Inject topic icons directly into the HTML before BS4 parses it
-    for label, icon in [("Cycling", "🚲"), ("Pedestrian", "🚶"), ("Housing", "🏠")]:
-        content_html = content_html.replace(
-            f"<strong>{label}", f"<strong>{icon}&nbsp;{label}"
-        )
-
     # Wrap Topics of Interest section in a callout div
     soup = BeautifulSoup(content_html, "html.parser")
     callout_style = (
@@ -510,6 +503,7 @@ def _build_email_body(
             "font-size:15px; font-weight:700; color:#1e293b; "
             "margin:20px 0 6px; padding-bottom:4px; border-bottom:1px solid #e2e8f0;"
         ),
+        "h3": "font-size:14px; font-weight:700; color:#1e3a5f; margin:14px 0 4px;",
         "p":  "margin:6px 0; color:#334155; font-size:14px; line-height:1.6;",
         "ul": "margin:6px 0 6px 20px; color:#334155; font-size:14px;",
         "ol": "margin:6px 0 6px 20px; color:#334155; font-size:14px;",
@@ -525,15 +519,15 @@ def _build_email_body(
 
     is_pdf = "pdf" in source_url.lower()
     pdf_label = "Download full agenda PDF" if is_pdf else "View full agenda"
-    meeting_label = f"{meeting_date} Meeting Agenda" if meeting_date else "Meeting Agenda"
-    subtitle = f"{meeting_label} (summary focused on items affecting cycling, pedestrians and housing)"
+    meeting_label = f"{meeting_date} Meeting Agenda Summary" if meeting_date else "Meeting Agenda Summary"
+    subtitle = meeting_label
 
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sausalito City Council — {meeting_label}</title>
+  <title>Sausalito City Council: Upcoming Meeting — {meeting_label}</title>
 </head>
 <body style="margin:0; padding:0; background:#f0f4f8; font-family:Arial,Helvetica,sans-serif;">
   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f0f4f8;">
@@ -546,10 +540,9 @@ def _build_email_body(
           <!-- Header -->
           <tr>
             <td style="background:#0c3547; padding:24px 28px;">
-              <div style="font-size:26px; margin-bottom:6px;">⚓</div>
               <h1 style="margin:0; color:#ffffff; font-size:20px; font-weight:800;
                          letter-spacing:-0.3px; font-family:Arial,Helvetica,sans-serif;">
-                Sausalito City Council
+                ⚓ Sausalito City Council: Upcoming Meeting
               </h1>
               <p style="margin:6px 0 0; color:rgba(255,255,255,0.85); font-size:13px;
                         line-height:1.4; font-family:Arial,Helvetica,sans-serif;">
@@ -579,8 +572,8 @@ def _build_email_body(
                        font-size:11px; color:#94a3b8;
                        font-family:Arial,Helvetica,sans-serif;">
               Last updated: {updated_str} &nbsp;·&nbsp;
-              <a href="mailto:{SENDER_EMAIL}"
-                 style="color:#1a6b8a; text-decoration:none;">{SENDER_EMAIL}</a>
+              <a href="mailto:{SENDER_EMAIL[1]}"
+                 style="color:#1a6b8a; text-decoration:none;">{SENDER_EMAIL[1]}</a>
             </td>
           </tr>
         </table>
@@ -622,7 +615,7 @@ def send_email(subject: str, html_body: str) -> None:
         status = getattr(exc, "status_code", None)
         if status == 403:
             print(
-                f"SendGrid 403 Forbidden — '{SENDER_EMAIL}' is probably not yet verified.\n"
+                f"SendGrid 403 Forbidden — '{SENDER_EMAIL[1]}' is probably not yet verified.\n"
                 "Fix: SendGrid dashboard → Settings → Sender Authentication → "
                 "verify the sender address.",
                 file=sys.stderr,
