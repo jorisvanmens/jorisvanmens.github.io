@@ -215,10 +215,16 @@ Wrap it in Markdown italics as shown. Do NOT include the meeting location or Zoo
 Then write 2–3 sentences summarizing the overall themes or most significant items.
 
 ## 2. Topics of Interest
-Identify every agenda item related to any of the following, even if only tangentially:
-- **Cycling** — bike lanes, bicycle infrastructure, bike-share, Caltrans roadway projects, multi-use paths, etc.
-- **Pedestrian safety** — sidewalks, crosswalks, traffic calming, speed limits, Vision Zero, school safety zones, ADA accessibility, etc.
-- **Housing** — affordable housing, zoning or general plan amendments, development/subdivision approvals, ADUs, density bonuses, inclusionary requirements, housing element updates, etc.
+Identify every agenda item related to any of the following, even if only tangentially. For each category that has matching items, use the exact Markdown sub-header shown below:
+
+### 🚲 Cycling
+Covers: bike lanes, bicycle infrastructure, bike-share, Caltrans roadway projects, multi-use paths, etc.
+
+### 🚶 Pedestrian Safety
+Covers: sidewalks, crosswalks, traffic calming, speed limits, Vision Zero, school safety zones, ADA accessibility, etc.
+
+### 🏠 Housing
+Covers: affordable housing, zoning or general plan amendments, development/subdivision approvals, ADUs, density bonuses, inclusionary requirements, housing element updates, etc.
 
 For each relevant item include:
 - The agenda item number and a brief description
@@ -354,6 +360,12 @@ def write_html(
       border-bottom: 1px solid #e2e8f0;
     }}
     .summary h2:first-child {{ margin-top: 0; }}
+    .summary h3 {{
+      font-size: 1rem;
+      font-weight: 700;
+      color: #1e3a5f;
+      margin: 1.2rem 0 0.4rem;
+    }}
 
     .summary p {{ margin: 0.6rem 0; color: #334155; }}
 
@@ -436,16 +448,6 @@ def write_html(
         }}
       }});
 
-      // Prepend topic icons to bold category labels inside the callout
-      const icons = {{ Cycling: '🚲', Pedestrian: '🚶', Housing: '🏠' }};
-      document.querySelectorAll('.topics-callout strong').forEach(el => {{
-        for (const [label, icon] of Object.entries(icons)) {{
-          if (el.textContent.trim().startsWith(label)) {{
-            el.textContent = icon + '\u00a0' + el.textContent;
-            break;
-          }}
-        }}
-      }});
     </script>
 
     <footer class="page-footer">
@@ -474,12 +476,6 @@ def _build_email_body(
     """
     content_html = md_lib.markdown(summary_markdown, extensions=["extra"])
 
-    # Inject topic icons directly into the HTML before BS4 parses it
-    for label, icon in [("Cycling", "🚲"), ("Pedestrian", "🚶"), ("Housing", "🏠")]:
-        content_html = content_html.replace(
-            f"<strong>{label}", f"<strong>{icon}&nbsp;{label}"
-        )
-
     # Wrap Topics of Interest section in a callout div
     soup = BeautifulSoup(content_html, "html.parser")
     callout_style = (
@@ -507,6 +503,7 @@ def _build_email_body(
             "font-size:15px; font-weight:700; color:#1e293b; "
             "margin:20px 0 6px; padding-bottom:4px; border-bottom:1px solid #e2e8f0;"
         ),
+        "h3": "font-size:14px; font-weight:700; color:#1e3a5f; margin:14px 0 4px;",
         "p":  "margin:6px 0; color:#334155; font-size:14px; line-height:1.6;",
         "ul": "margin:6px 0 6px 20px; color:#334155; font-size:14px;",
         "ol": "margin:6px 0 6px 20px; color:#334155; font-size:14px;",
