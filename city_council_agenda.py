@@ -43,7 +43,7 @@ LAST_EVENT_ID_PATH = Path(__file__).parent / "city-council" / "last_event_id"
 
 # ── Email settings ────────────────────────────────────────────────────────────
 # SENDER_EMAIL must be verified in SendGrid (Settings → Sender Authentication).
-SENDER_EMAIL = "city-council-app@jorisvanmens.com"
+SENDER_EMAIL = ("Sausalito City Council", "city-council-app@jorisvanmens.com")
 
 # Recipients are read from the EMAIL_RECIPIENTS environment variable (a GitHub
 # Actions secret) so they are never stored in this public repository.
@@ -579,8 +579,8 @@ def _build_email_body(
                        font-size:11px; color:#94a3b8;
                        font-family:Arial,Helvetica,sans-serif;">
               Last updated: {updated_str} &nbsp;·&nbsp;
-              <a href="mailto:{SENDER_EMAIL}"
-                 style="color:#1a6b8a; text-decoration:none;">{SENDER_EMAIL}</a>
+              <a href="mailto:{SENDER_EMAIL[1]}"
+                 style="color:#1a6b8a; text-decoration:none;">{SENDER_EMAIL[1]}</a>
             </td>
           </tr>
         </table>
@@ -622,7 +622,7 @@ def send_email(subject: str, html_body: str) -> None:
         status = getattr(exc, "status_code", None)
         if status == 403:
             print(
-                f"SendGrid 403 Forbidden — '{SENDER_EMAIL}' is probably not yet verified.\n"
+                f"SendGrid 403 Forbidden — '{SENDER_EMAIL[1]}' is probably not yet verified.\n"
                 "Fix: SendGrid dashboard → Settings → Sender Authentication → "
                 "verify the sender address.",
                 file=sys.stderr,
