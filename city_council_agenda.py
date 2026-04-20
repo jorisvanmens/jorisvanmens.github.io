@@ -40,6 +40,7 @@ AGENDA_URL_TEMPLATE = f"{GRANICUS_BASE}/AgendaViewer.php?view_id=6&event_id={{ev
 
 HTML_OUTPUT_PATH = Path(__file__).parent / "city-council" / "index.html"
 LAST_EVENT_ID_PATH = Path(__file__).parent / "city-council" / "last_event_id"
+AGENDAS_DIR = Path(__file__).parent / "city-council" / "agendas"
 
 # ── Email settings ────────────────────────────────────────────────────────────
 # SENDER_EMAIL must be verified in SendGrid (Settings → Sender Authentication).
@@ -154,11 +155,12 @@ def _parse_html(resp: requests.Response) -> tuple[str, str]:
     return meeting_title, re.sub(r"\n{3,}", "\n\n", raw_text)
 
 
-def fetch_agenda_text(agenda_url: str) -> tuple[str, str, str]:
+def fetch_agenda_text(agenda_url: str) -> tuple[str, str, str, bytes | None]:
     """
     Fetch a Granicus AgendaViewer URL.
-    Returns (meeting_title, agenda_text, source_url) where source_url is the
-    final URL after any redirects (may be a PDF on S3).
+    Returns (meeting_title, agenda_text, source_url, pdf_bytes) where
+    source_url is the final URL after any redirects and pdf_bytes is the
+    raw PDF content (or None if the agenda was served as HTML).
     """
     print(f"Fetching agenda from:\n  {agenda_url}")
     resp = _get(agenda_url)
@@ -171,10 +173,18 @@ def fetch_agenda_text(agenda_url: str) -> tuple[str, str, str]:
     if is_pdf:
         print(f"  → PDF detected ({resp.url}), extracting text with pdfplumber")
         title, text = _parse_pdf(resp.content)
+        return title, text, source_url, resp.content
     else:
         title, text = _parse_html(resp)
+        return title, text, source_url, None
 
-    return title, text, source_url
+
+def save_agenda_pdf(event_id: str, pdf_bytes: bytes) -> Path:
+    """Save the raw agenda PDF to city-council/agendas/event_{event_id}.pdf."""
+    AGENDAS_DIR.mkdir(exist_ok=True)
+    path = AGENDAS_DIR / f"event_{event_id}.pdf"
+    path.write_bytes(pdf_bytes)
+    return path
 
 
 def extract_meeting_date(text: str) -> str:
@@ -677,7 +687,7 @@ def main() -> None:
 
     # ── Step 2: Fetch and parse the agenda ───────────────────────────────────
     try:
-        meeting_title, agenda_text, source_url = fetch_agenda_text(agenda_url)
+        meeting_title, agenda_text, source_url, pdf_bytes = fetch_agenda_text(agenda_url)
     except requests.HTTPError as exc:
         print(f"HTTP error fetching agenda ({exc.response.status_code}): {exc}", file=sys.stderr)
         sys.exit(1)
@@ -725,6 +735,9 @@ def main() -> None:
     if current_event_id:
         save_event_id(current_event_id)
         print(f"Saved event_id={current_event_id} to {LAST_EVENT_ID_PATH}\n")
+    if pdf_bytes:
+        pdf_path = save_agenda_pdf(current_event_id, pdf_bytes)
+        print(f"Agenda PDF saved to: {pdf_path}\n")
 
     # ── Step 5: Send email ────────────────────────────────────────────────────
     now_utc = datetime.now(timezone.utc)
