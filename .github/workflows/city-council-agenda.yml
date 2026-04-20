@@ -9,6 +9,14 @@ on:
         description: 'Re-run even if the agenda has not changed'
         type: boolean
         default: false
+      skip_email:
+        description: 'Run the full workflow without sending an email'
+        type: boolean
+        default: false
+      use_stored_pdf:
+        description: 'Skip fetching; re-summarize from the latest saved PDF (implies force)'
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -35,9 +43,11 @@ jobs:
           SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
           EMAIL_RECIPIENTS: ${{ secrets.EMAIL_RECIPIENTS }}
         run: |
-          FORCE=""
-          if [ "${{ github.event.inputs.force }}" = "true" ]; then FORCE="--force"; fi
-          python city_council_agenda.py $FORCE
+          FLAGS=""
+          if [ "${{ github.event.inputs.force }}"          = "true" ]; then FLAGS="$FLAGS --force"; fi
+          if [ "${{ github.event.inputs.skip_email }}"     = "true" ]; then FLAGS="$FLAGS --skip-email"; fi
+          if [ "${{ github.event.inputs.use_stored_pdf }}" = "true" ]; then FLAGS="$FLAGS --use-stored-pdf"; fi
+          python city_council_agenda.py $FLAGS
 
       - name: Commit updated files
         run: |

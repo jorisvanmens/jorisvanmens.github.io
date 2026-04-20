@@ -40,6 +40,7 @@ AGENDA_URL_TEMPLATE = f"{GRANICUS_BASE}/AgendaViewer.php?view_id=6&event_id={{ev
 
 HTML_OUTPUT_PATH = Path(__file__).parent / "city-council" / "index.html"
 LAST_EVENT_ID_PATH = Path(__file__).parent / "city-council" / "last_event_id"
+AGENDAS_DIR = Path(__file__).parent / "city-council" / "agendas"
 
 # ── Email settings ────────────────────────────────────────────────────────────
 # SENDER_EMAIL must be verified in SendGrid (Settings → Sender Authentication).
@@ -154,11 +155,12 @@ def _parse_html(resp: requests.Response) -> tuple[str, str]:
     return meeting_title, re.sub(r"\n{3,}", "\n\n", raw_text)
 
 
-def fetch_agenda_text(agenda_url: str) -> tuple[str, str, str]:
+def fetch_agenda_text(agenda_url: str) -> tuple[str, str, str, bytes | None]:
     """
     Fetch a Granicus AgendaViewer URL.
-    Returns (meeting_title, agenda_text, source_url) where source_url is the
-    final URL after any redirects (may be a PDF on S3).
+    Returns (meeting_title, agenda_text, source_url, pdf_bytes) where
+    source_url is the final URL after any redirects and pdf_bytes is the
+    raw PDF content (or None if the agenda was served as HTML).
     """
     print(f"Fetching agenda from:\n  {agenda_url}")
     resp = _get(agenda_url)
@@ -171,10 +173,42 @@ def fetch_agenda_text(agenda_url: str) -> tuple[str, str, str]:
     if is_pdf:
         print(f"  → PDF detected ({resp.url}), extracting text with pdfplumber")
         title, text = _parse_pdf(resp.content)
+        return title, text, source_url, resp.content
     else:
         title, text = _parse_html(resp)
+        return title, text, source_url, None
 
-    return title, text, source_url
+
+def save_agenda_pdf(event_id: str, pdf_bytes: bytes) -> Path:
+    """Save the raw agenda PDF to city-council/agendas/event_{event_id}_initial.pdf."""
+    AGENDAS_DIR.mkdir(exist_ok=True)
+    path = AGENDAS_DIR / f"event_{event_id}_initial.pdf"
+    path.write_bytes(pdf_bytes)
+    return path
+
+
+def load_stored_pdf() -> tuple[str, str, str, str, bytes]:
+    """
+    Load the most recently saved agenda PDF from city-council/agendas/.
+    Returns (meeting_title, agenda_text, source_url, event_id, pdf_bytes).
+    source_url is reconstructed from the event_id (the original S3 URL is not stored).
+    """
+    if not AGENDAS_DIR.exists():
+        raise FileNotFoundError(f"Agendas directory not found: {AGENDAS_DIR}")
+    pdfs = sorted(AGENDAS_DIR.glob("event_*_initial.pdf"), key=lambda p: p.stat().st_mtime, reverse=True)
+    if not pdfs:
+        raise FileNotFoundError(f"No saved PDFs found in {AGENDAS_DIR}")
+
+    pdf_path = pdfs[0]
+    print(f"Loading stored PDF: {pdf_path.name}")
+    pdf_bytes = pdf_path.read_bytes()
+    title, text = _parse_pdf(pdf_bytes)
+
+    match = re.match(r"event_(\d+)_initial\.pdf", pdf_path.name)
+    event_id = match.group(1) if match else ""
+    source_url = AGENDA_URL_TEMPLATE.format(event_id=event_id) if event_id else str(pdf_path)
+
+    return title, text, source_url, event_id, pdf_bytes
 
 
 def extract_meeting_date(text: str) -> str:
@@ -655,50 +689,74 @@ def main() -> None:
         action="store_true",
         help="Run even if the agenda event_id has not changed since the last run.",
     )
+    parser.add_argument(
+        "--skip-email",
+        action="store_true",
+        help="Run the full workflow but do not send an email.",
+    )
+    parser.add_argument(
+        "--use-stored-pdf",
+        action="store_true",
+        help=(
+            "Skip fetching a new agenda; use the most recently saved PDF "
+            "from city-council/agendas/. Implies --force."
+        ),
+    )
     args = parser.parse_args()
 
-    # ── Step 1: Resolve the agenda URL ───────────────────────────────────────
-    if args.url:
-        agenda_url = args.url
-        print(f"Using provided URL:\n  {agenda_url}\n")
-    else:
+    # ── Steps 1 & 2: Resolve agenda source ───────────────────────────────────
+    if args.use_stored_pdf:
         try:
-            agenda_url = find_next_agenda_url()
-            print(f"Found agenda:\n  {agenda_url}\n")
+            meeting_title, agenda_text, source_url, current_event_id, pdf_bytes = load_stored_pdf()
         except Exception as exc:
-            print(f"Error finding agenda URL: {exc}", file=sys.stderr)
-            print(
-                "\nTip: pass --url to bypass auto-discovery, e.g.:\n"
-                "  python city_council_agenda.py "
-                "--url 'https://sausalito.granicus.com/AgendaViewer.php?view_id=6&event_id=2791'",
-                file=sys.stderr,
-            )
+            print(f"Error loading stored PDF: {exc}", file=sys.stderr)
+            sys.exit(1)
+        agenda_url = source_url
+        save_pdf = False
+        print(f"Loaded stored PDF (event_id={current_event_id or 'unknown'})\n")
+    else:
+        # ── Step 1: Resolve the agenda URL ───────────────────────────────────
+        if args.url:
+            agenda_url = args.url
+            print(f"Using provided URL:\n  {agenda_url}\n")
+        else:
+            try:
+                agenda_url = find_next_agenda_url()
+                print(f"Found agenda:\n  {agenda_url}\n")
+            except Exception as exc:
+                print(f"Error finding agenda URL: {exc}", file=sys.stderr)
+                print(
+                    "\nTip: pass --url to bypass auto-discovery, e.g.:\n"
+                    "  python city_council_agenda.py "
+                    "--url 'https://sausalito.granicus.com/AgendaViewer.php?view_id=6&event_id=2791'",
+                    file=sys.stderr,
+                )
+                sys.exit(1)
+
+        # ── Step 2: Fetch and parse the agenda ───────────────────────────────
+        try:
+            meeting_title, agenda_text, source_url, pdf_bytes = fetch_agenda_text(agenda_url)
+        except requests.HTTPError as exc:
+            print(f"HTTP error fetching agenda ({exc.response.status_code}): {exc}", file=sys.stderr)
+            sys.exit(1)
+        except Exception as exc:
+            print(f"Error fetching agenda: {exc}", file=sys.stderr)
             sys.exit(1)
 
-    # ── Step 2: Fetch and parse the agenda ───────────────────────────────────
-    try:
-        meeting_title, agenda_text, source_url = fetch_agenda_text(agenda_url)
-    except requests.HTTPError as exc:
-        print(f"HTTP error fetching agenda ({exc.response.status_code}): {exc}", file=sys.stderr)
-        sys.exit(1)
-    except Exception as exc:
-        print(f"Error fetching agenda: {exc}", file=sys.stderr)
-        sys.exit(1)
+        # ── Check whether this agenda is new ─────────────────────────────────
+        event_id_match = re.search(r"event_id=(\d+)", agenda_url)
+        current_event_id = event_id_match.group(1) if event_id_match else ""
+        last_event_id = get_last_event_id()
+
+        if not args.force and current_event_id and current_event_id == last_event_id:
+            print(f"Agenda event_id={current_event_id} was already processed. Nothing to do.")
+            print("Pass --force to re-run anyway.")
+            sys.exit(0)
+
+        print(f"New agenda detected (event_id={current_event_id}, last={last_event_id or 'none'}).\n")
+        save_pdf = bool(pdf_bytes)
 
     meeting_date = extract_meeting_date(agenda_text)
-    # ── Check whether this agenda is new ─────────────────────────────────────
-    event_id_match = re.search(r"event_id=(\d+)", agenda_url)
-    current_event_id = event_id_match.group(1) if event_id_match else ""
-    last_event_id = get_last_event_id()
-
-    if not args.force and current_event_id and current_event_id == last_event_id:
-        print(f"Agenda event_id={current_event_id} was already processed. Nothing to do.")
-        print("Pass --force to re-run anyway.")
-        sys.exit(0)
-
-    print(f"New agenda detected (event_id={current_event_id}, last={last_event_id or 'none'}).\n")
-
-    # ── Step 2b: Fetch and parse the agenda ───────────────────────────────────
     print(f"Meeting : {meeting_title}")
     print(f"Date    : {meeting_date or '(not found)'}")
     print(f"Source  : {source_url}")
@@ -722,21 +780,27 @@ def main() -> None:
     # ── Step 4: Write HTML and save state ────────────────────────────────────
     html_path = write_html(meeting_title, summary, agenda_url, source_url, meeting_date)
     print(f"HTML written to: {html_path}\n")
-    if current_event_id:
+    if current_event_id and not args.use_stored_pdf:
         save_event_id(current_event_id)
         print(f"Saved event_id={current_event_id} to {LAST_EVENT_ID_PATH}\n")
+    if save_pdf:
+        pdf_path = save_agenda_pdf(current_event_id, pdf_bytes)
+        print(f"Agenda PDF saved to: {pdf_path}\n")
 
     # ── Step 5: Send email ────────────────────────────────────────────────────
-    now_utc = datetime.now(timezone.utc)
-    updated_str = now_utc.strftime("%-d %B %Y at %-I:%M %p UTC")
-    subject = (
-        f"Sausalito City Council — {meeting_date + ' ' if meeting_date else ''}Meeting Agenda Summary"
-    )
-    try:
-        email_html = _build_email_body(summary, source_url, meeting_date, updated_str)
-        send_email(subject, email_html)
-    except Exception as exc:
-        print(f"Email: unexpected error — {exc}", file=sys.stderr)
+    if args.skip_email:
+        print("Email: skipped (--skip-email)")
+    else:
+        now_utc = datetime.now(timezone.utc)
+        updated_str = now_utc.strftime("%-d %B %Y at %-I:%M %p UTC")
+        subject = (
+            f"Sausalito City Council — {meeting_date + ' ' if meeting_date else ''}Meeting Agenda Summary"
+        )
+        try:
+            email_html = _build_email_body(summary, source_url, meeting_date, updated_str)
+            send_email(subject, email_html)
+        except Exception as exc:
+            print(f"Email: unexpected error — {exc}", file=sys.stderr)
 
     # ── Step 6: Print to stdout ───────────────────────────────────────────────
     print("=" * 60)
