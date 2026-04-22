@@ -252,7 +252,7 @@ def extract_meeting_datetime(text: str) -> datetime | None:
         return None
 
 
-def is_within_prefetch_window(meeting_dt: datetime, window_hours: float = 3.0) -> bool:
+def is_within_prefetch_window(meeting_dt: datetime, window_hours: float = 5.0) -> bool:
     """Return True if the current time is within window_hours before the meeting."""
     now = datetime.now(timezone.utc)
     hours_until = (meeting_dt.astimezone(timezone.utc) - now).total_seconds() / 3600
@@ -348,7 +348,7 @@ def summarize_agenda_changes(
 ) -> str:
     """Compare initial and final agenda texts with Claude, returning a Markdown diff summary."""
     client = anthropic.Anthropic()
-    prompt = f"""Compare these two versions of a Sausalito City Council meeting agenda and summarize what changed.
+    prompt = f"""Compare these two versions of a Sausalito City Council meeting agenda.
 
 ## Initial Agenda (posted earlier)
 {initial_text[:8000]}
@@ -356,13 +356,15 @@ def summarize_agenda_changes(
 ## Final Agenda (as of meeting day)
 {final_text[:8000]}
 
-Summarize any differences:
+List ONLY items that actually changed. For each changed item, write one or two sentences describing what changed. Do not mention items that remained the same.
+
+Changes to note:
 - Items added to or removed from the agenda
-- Changes to existing agenda item descriptions or scope
-- New supporting documents, staff reports, or attachments added
+- Meaningful changes to an item's description or scope
+- New staff reports or attachments added
 - Items moved, continued, or withdrawn
 
-If there are no meaningful differences, state that clearly.
+If nothing changed, write a single sentence saying so.
 
 Meeting: {meeting_title}
 Source: {agenda_url}
@@ -393,14 +395,22 @@ def summarize_public_comments(
     client = anthropic.Anthropic()
     prompt = f"""Analyze the following documents linked in a Sausalito City Council meeting agenda.
 
-For each topic or agenda item that has public comments, use this structure:
+For each agenda item that has public comments, use this structure:
 
-### [Topic / Agenda Item]
-- **Support**: N comments — [brief summary of supporting arguments]
-- **Opposition**: N comments — [brief summary of opposing arguments]
-- **Key themes**: [recurring concerns, requests, or viewpoints]
+### [Agenda Item Name]
 
-If a document is not a public comment (e.g., a staff report or technical study), note its title and summarize its content in 1–2 sentences instead.
+Count the total number of comments for this item, then apply the rule below:
+
+**5 or fewer comments:** Write a one-sentence summary of each individual comment.
+
+**6 or more comments:** Report only the support/opposition counts and a 2–3 sentence summary of the overall sentiment. Do not list individual comments.
+
+Rules that apply in all cases:
+- Do NOT include a "Key themes" section
+- Do NOT list commenters' names or "notable supporters/opponents"
+- Keep it concise
+
+If a linked document is not a public comment (e.g. a staff report or technical study), give its title and a one-sentence summary.
 
 Meeting: {meeting_title}
 
@@ -747,6 +757,7 @@ def write_final_html(
     agenda_url: str,
     source_url: str,
     meeting_date: str,
+    public_comment_time: str = "",
 ) -> Path:
     """Write the final-agenda summary (changes + public comments) to city-council/final.html."""
     changes_html = md_lib.markdown(changes_summary, extensions=["extra"])
@@ -787,18 +798,17 @@ def write_final_html(
     }}
     .header-inner {{ max-width: 780px; margin: 0 auto; }}
     .site-header h1 {{
-      font-size: 1.75rem;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      text-shadow: 0 1px 4px rgba(0,0,0,0.25);
+      font-size: 1rem;
+      font-weight: 600;
+      opacity: 0.9;
       display: flex;
       align-items: center;
       gap: 0.4rem;
     }}
     .site-header .meeting-label {{
-      font-size: 1rem;
-      opacity: 0.85;
-      margin-top: 0.3rem;
+      font-size: 0.85rem;
+      opacity: 0.7;
+      margin-top: 0.2rem;
       font-weight: 400;
     }}
 
@@ -827,12 +837,12 @@ def write_final_html(
     }}
 
     .summary h2 {{
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: #1e293b;
-      margin: 2rem 0 0.6rem;
-      padding-bottom: 0.35rem;
-      border-bottom: 1px solid #e2e8f0;
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #0c3547;
+      margin: 2.5rem 0 0.75rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 2px solid #1a6b8a;
     }}
     .summary h2:first-child {{ margin-top: 0; }}
     .summary h3 {{
@@ -881,8 +891,19 @@ def write_final_html(
     .page-footer a {{ color: #1a6b8a; text-decoration: none; }}
     .page-footer a:hover {{ text-decoration: underline; }}
 
+    /* ── Public comment notice ── */
+    .public-comment-notice {{
+      background: #fef9c3;
+      border-left: 4px solid #ca8a04;
+      border-radius: 0 6px 6px 0;
+      padding: 0.6rem 1rem;
+      font-size: 0.9rem;
+      color: #713f12;
+      margin-bottom: 1.5rem;
+    }}
+
     @media (max-width: 600px) {{
-      .site-header h1 {{ font-size: 1.35rem; }}
+      .summary h2 {{ font-size: 1.25rem; }}
       .page {{ padding: 1.25rem 1rem 3rem; }}
     }}
   </style>
@@ -905,6 +926,8 @@ def write_final_html(
 
   <div class="page">
     <div class="summary">
+
+      {(f'<div class="public-comment-notice">📣 Public comment opens at <strong>{public_comment_time}</strong></div>') if public_comment_time else ""}
 
       <h2>📝 Changes to the Agenda</h2>
       <div class="changes-callout">
@@ -955,13 +978,15 @@ def run_final_mode(args) -> None:
     initial_links = set(_pdf_links_from_bytes(initial_pdf_bytes))
     meeting_date = extract_meeting_date(initial_text)
     agenda_url = AGENDA_URL_TEMPLATE.format(event_id=last_event_id)
+    meeting_dt = extract_meeting_datetime(initial_text)
+    public_comment_time = meeting_dt.strftime("%-I:%M %p %Z") if meeting_dt else ""
     print(f"  event_id : {last_event_id}")
     print(f"  meeting  : {initial_title}")
-    print(f"  date     : {meeting_date or '(not found)'}\n")
+    print(f"  date     : {meeting_date or '(not found)'}")
+    print(f"  time     : {public_comment_time or '(not found)'}\n")
 
     # Timing check
     if not args.skip_timing_check:
-        meeting_dt = extract_meeting_datetime(initial_text)
         if meeting_dt is None:
             print("Could not parse meeting date/time from initial PDF.", file=sys.stderr)
             print("Pass --skip-timing-check to proceed regardless.", file=sys.stderr)
@@ -971,7 +996,7 @@ def run_final_mode(args) -> None:
             if hours_until < 0:
                 print(f"Meeting already started {-hours_until:.1f}h ago. Exiting.")
             else:
-                print(f"Meeting is {hours_until:.1f}h away — outside the 3-hour prefetch window. Exiting.")
+                print(f"Meeting is {hours_until:.1f}h away — outside the 5-hour prefetch window. Exiting.")
             sys.exit(0)
         print(f"Meeting is {hours_until:.1f}h away — within prefetch window.\n")
 
@@ -1049,7 +1074,7 @@ def run_final_mode(args) -> None:
     # Step 3: Write HTML
     html_path = write_final_html(
         initial_title, changes_summary, comments_summary,
-        agenda_url, source_url, meeting_date,
+        agenda_url, source_url, meeting_date, public_comment_time,
     )
     print(f"Final HTML written to: {html_path}\n")
 
@@ -1059,10 +1084,7 @@ def run_final_mode(args) -> None:
     else:
         now_utc = datetime.now(timezone.utc)
         updated_str = now_utc.strftime("%-d %B %Y at %-I:%M %p UTC")
-        subject = (
-            f"Sausalito City Council — {meeting_date + ' ' if meeting_date else ''}"
-            "Meeting Day: Changes & Public Comments"
-        )
+        subject = "Agenda Changes & Comment Summary"
         combined_markdown = (
             "## Changes to the Agenda\n\n" + changes_summary
             + "\n\n---\n\n## Public Comments\n\n" + comments_summary

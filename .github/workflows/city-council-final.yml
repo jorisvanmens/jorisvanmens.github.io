@@ -2,10 +2,10 @@ name: City Council Final Agenda
 
 on:
   schedule:
-    # Midnight UTC = 4 PM PST (5 PM PDT in summer).
+    # 11 PM UTC = 3 PM PST (4 PM PDT in summer).
     # The script checks the actual meeting time and exits early if outside
     # the 3-hour window, so running daily is safe.
-    - cron: '0 0 * * *'
+    - cron: '0 23 * * *'
   workflow_dispatch:
     inputs:
       skip_timing_check:
