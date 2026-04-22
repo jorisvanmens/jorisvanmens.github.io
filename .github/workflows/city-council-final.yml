@@ -2,12 +2,12 @@ name: City Council Final Agenda
 
 on:
   schedule:
-    # Two schedules so it always fires at 3 PM PT regardless of DST:
-    # 10 PM UTC = 3 PM PDT (summer, UTC-7)
-    # 11 PM UTC = 3 PM PST (winter, UTC-8)
+    # Two schedules so it always fires at 4 PM PT regardless of DST:
+    # 11 PM UTC = 4 PM PDT (summer, UTC-7)
+    # Midnight UTC = 4 PM PST (winter, UTC-8)
     # The script exits immediately if it already ran for this event today.
-    - cron: '0 22 * * *'
     - cron: '0 23 * * *'
+    - cron: '0 0 * * *'
   workflow_dispatch:
     inputs:
       skip_timing_check:
