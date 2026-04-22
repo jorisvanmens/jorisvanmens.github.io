@@ -231,7 +231,10 @@ def extract_meeting_date(text: str) -> str:
 
 
 def extract_meeting_datetime(text: str) -> datetime | None:
-    """Return a Pacific-timezone-aware datetime for the primary meeting start time."""
+    """
+    Return a Pacific-timezone-aware datetime for the Regular Meeting / Open Session start time.
+    Falls back to the last time found in the first 3000 characters if no labelled session found.
+    """
     date_match = re.search(
         r"\b(?:January|February|March|April|May|June|July|August|"
         r"September|October|November|December)\s+\d{1,2},\s+20\d{2}\b",
@@ -239,10 +242,20 @@ def extract_meeting_datetime(text: str) -> datetime | None:
     )
     if not date_match:
         return None
-    times = re.findall(r"\b(\d{1,2}:\d{2})\s*([AP]\.?M\.?)\b", text[:3000], re.I)
-    if not times:
-        return None
-    time_str, ampm_raw = times[-1]
+
+    # Prefer time explicitly labelled as Regular Meeting or Open Session
+    labelled = re.search(
+        r"(?:Regular\s+Meeting|Open\s+Session)\s*[:\-]?\s*(\d{1,2}:\d{2})\s*([AP]\.?M\.?)",
+        text[:3000], re.I,
+    )
+    if labelled:
+        time_str, ampm_raw = labelled.group(1), labelled.group(2)
+    else:
+        times = re.findall(r"\b(\d{1,2}:\d{2})\s*([AP]\.?M\.?)\b", text[:3000], re.I)
+        if not times:
+            return None
+        time_str, ampm_raw = times[-1]
+
     ampm = re.sub(r"[^APMapm]", "", ampm_raw).upper()
     try:
         pacific = ZoneInfo("America/Los_Angeles")
@@ -395,19 +408,21 @@ def summarize_public_comments(
     client = anthropic.Anthropic()
     prompt = f"""Analyze the following documents linked in a Sausalito City Council meeting agenda.
 
+Do NOT add a title or meeting header at the top of your response. Start directly with the first agenda item.
+
 For each agenda item that has public comments, use this structure:
 
 ### [Agenda Item Name]
 
-Count the total number of comments for this item, then apply the rule below:
+Count the total comments for this item, then apply exactly one of these two formats:
 
-**5 or fewer comments:** Write a one-sentence summary of each individual comment.
+**5 or fewer comments:** Write a one-sentence summary of each individual comment. Use the commenter's actual name if it appears in the document; never write "a resident" or "a community member".
 
-**6 or more comments:** Report only the support/opposition counts and a 2–3 sentence summary of the overall sentiment. Do not list individual comments.
+**6 or more comments:** Write the support/opposition counts and a 2–3 sentence summary of the overall sentiment. Do not list individual comments.
 
 Rules that apply in all cases:
 - Do NOT include a "Key themes" section
-- Do NOT list commenters' names or "notable supporters/opponents"
+- Do NOT produce long lists of names ("Notable supporters: …")
 - Keep it concise
 
 If a linked document is not a public comment (e.g. a staff report or technical study), give its title and a one-sentence summary.
@@ -665,6 +680,10 @@ def _build_email_body(
 
     # Apply inline styles to every element
     STYLES = {
+        "h1": (
+            "font-size:20px; font-weight:800; color:#0c3547; "
+            "margin:24px 0 8px; padding-bottom:6px; border-bottom:2px solid #1a6b8a;"
+        ),
         "h2": (
             "font-size:15px; font-weight:700; color:#1e293b; "
             "margin:20px 0 6px; padding-bottom:4px; border-bottom:1px solid #e2e8f0;"
@@ -927,7 +946,7 @@ def write_final_html(
   <div class="page">
     <div class="summary">
 
-      {(f'<div class="public-comment-notice">📣 Public comment opens at <strong>{public_comment_time}</strong></div>') if public_comment_time else ""}
+      {(f'<div class="public-comment-notice">📣 Open session starts at <strong>{public_comment_time}</strong></div>') if public_comment_time else ""}
 
       <h2>📝 Changes to the Agenda</h2>
       <div class="changes-callout">
@@ -971,6 +990,12 @@ def run_final_mode(args) -> None:
     if not initial_pdf_path.exists():
         print(f"Initial PDF not found: {initial_pdf_path}", file=sys.stderr)
         sys.exit(1)
+
+    # Skip if already processed (prevents double-run at DST boundary when both crons fire)
+    existing_final = AGENDAS_DIR / f"event_{last_event_id}_final.pdf"
+    if not args.force and not args.use_stored_final_pdf and existing_final.exists():
+        print(f"Final summary already generated ({existing_final.name}). Pass --force to re-run.")
+        sys.exit(0)
 
     print(f"Loading initial PDF: {initial_pdf_path.name}")
     initial_pdf_bytes = initial_pdf_path.read_bytes()
@@ -1084,10 +1109,10 @@ def run_final_mode(args) -> None:
     else:
         now_utc = datetime.now(timezone.utc)
         updated_str = now_utc.strftime("%-d %B %Y at %-I:%M %p UTC")
-        subject = "Agenda Changes & Comment Summary"
+        subject = "Today's meeting: comments & agenda update"
         combined_markdown = (
-            "## Changes to the Agenda\n\n" + changes_summary
-            + "\n\n---\n\n## Public Comments\n\n" + comments_summary
+            "# Changes to the Agenda\n\n" + changes_summary
+            + "\n\n---\n\n# Public Comments\n\n" + comments_summary
         )
         try:
             email_html = _build_email_body(combined_markdown, source_url, meeting_date, updated_str)
