@@ -1,0 +1,70 @@
+name: City Council Final Agenda
+
+on:
+  schedule:
+    # 1 AM UTC = 5 PM PST / 6 PM PDT (~1–3 h before typical 7 PM meetings).
+    # The script checks the actual meeting time and exits early if outside
+    # the 3-hour window, so running daily is safe.
+    - cron: '0 1 * * *'
+  workflow_dispatch:
+    inputs:
+      skip_timing_check:
+        description: 'Skip the meeting-time proximity check'
+        type: boolean
+        default: false
+      skip_email:
+        description: 'Run without sending email'
+        type: boolean
+        default: false
+      use_stored_final_pdf:
+        description: 'Use stored final PDF instead of fetching a new one'
+        type: boolean
+        default: false
+      fetch_final_only:
+        description: 'Only fetch and save the final PDF, no summarization'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  final-summary:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run final agenda summarizer
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
+          EMAIL_RECIPIENTS: ${{ secrets.EMAIL_RECIPIENTS }}
+        run: |
+          FLAGS="--final"
+          if [ "${{ github.event.inputs.skip_timing_check }}"  = "true" ]; then FLAGS="$FLAGS --skip-timing-check"; fi
+          if [ "${{ github.event.inputs.skip_email }}"         = "true" ]; then FLAGS="$FLAGS --skip-email"; fi
+          if [ "${{ github.event.inputs.use_stored_final_pdf }}" = "true" ]; then FLAGS="$FLAGS --use-stored-final-pdf"; fi
+          if [ "${{ github.event.inputs.fetch_final_only }}"   = "true" ]; then FLAGS="$FLAGS --fetch-final-only"; fi
+          python city_council_agenda.py $FLAGS
+
+      - name: Commit updated files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add city-council/
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "Update City Council final agenda summary [automated]"
+            git push
+          fi

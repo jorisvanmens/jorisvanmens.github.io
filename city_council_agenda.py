@@ -26,6 +26,7 @@ import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import anthropic
 import markdown as md_lib
@@ -39,6 +40,7 @@ PUBLISHER_URL = f"{GRANICUS_BASE}/ViewPublisher.php?view_id=6"
 AGENDA_URL_TEMPLATE = f"{GRANICUS_BASE}/AgendaViewer.php?view_id=6&event_id={{event_id}}"
 
 HTML_OUTPUT_PATH = Path(__file__).parent / "city-council" / "index.html"
+FINAL_HTML_OUTPUT_PATH = Path(__file__).parent / "city-council" / "final.html"
 LAST_EVENT_ID_PATH = Path(__file__).parent / "city-council" / "last_event_id"
 AGENDAS_DIR = Path(__file__).parent / "city-council" / "agendas"
 
@@ -211,6 +213,12 @@ def load_stored_pdf() -> tuple[str, str, str, str, bytes]:
     return title, text, source_url, event_id, pdf_bytes
 
 
+def _pdf_links_from_bytes(pdf_bytes: bytes) -> list[str]:
+    """Extract all hyperlink URLs from a PDF given as raw bytes."""
+    with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
+        return _pdf_links(pdf)
+
+
 def extract_meeting_date(text: str) -> str:
     """Return the first recognisable long-form date found in the agenda text."""
     m = re.search(
@@ -220,6 +228,48 @@ def extract_meeting_date(text: str) -> str:
         re.I,
     )
     return m.group(0) if m else ""
+
+
+def extract_meeting_datetime(text: str) -> datetime | None:
+    """Return a Pacific-timezone-aware datetime for the primary meeting start time."""
+    date_match = re.search(
+        r"\b(?:January|February|March|April|May|June|July|August|"
+        r"September|October|November|December)\s+\d{1,2},\s+20\d{2}\b",
+        text[:3000], re.I,
+    )
+    if not date_match:
+        return None
+    times = re.findall(r"\b(\d{1,2}:\d{2})\s*([AP]\.?M\.?)\b", text[:3000], re.I)
+    if not times:
+        return None
+    time_str, ampm_raw = times[-1]
+    ampm = re.sub(r"[^APMapm]", "", ampm_raw).upper()
+    try:
+        pacific = ZoneInfo("America/Los_Angeles")
+        dt = datetime.strptime(f"{date_match.group(0)} {time_str} {ampm}", "%B %d, %Y %I:%M %p")
+        return dt.replace(tzinfo=pacific)
+    except ValueError:
+        return None
+
+
+def is_within_prefetch_window(meeting_dt: datetime, window_hours: float = 3.0) -> bool:
+    """Return True if the current time is within window_hours before the meeting."""
+    now = datetime.now(timezone.utc)
+    hours_until = (meeting_dt.astimezone(timezone.utc) - now).total_seconds() / 3600
+    return 0 < hours_until <= window_hours
+
+
+def fetch_linked_document(url: str) -> str:
+    """Fetch a URL and return its text content, handling both PDF and HTML."""
+    resp = _get(url)
+    resp.raise_for_status()
+    content_type = resp.headers.get("Content-Type", "")
+    is_pdf = "pdf" in content_type or url.lower().endswith(".pdf")
+    if is_pdf:
+        _, text = _parse_pdf(resp.content)
+    else:
+        _, text = _parse_html(resp)
+    return text
 
 
 def summarize_agenda(meeting_title: str, agenda_text: str, agenda_url: str) -> str:
@@ -290,6 +340,78 @@ Meeting: {meeting_title}
         messages=[{"role": "user", "content": user_prompt}],
     )
 
+    return message.content[0].text
+
+
+def summarize_agenda_changes(
+    initial_text: str, final_text: str, meeting_title: str, agenda_url: str
+) -> str:
+    """Compare initial and final agenda texts with Claude, returning a Markdown diff summary."""
+    client = anthropic.Anthropic()
+    prompt = f"""Compare these two versions of a Sausalito City Council meeting agenda and summarize what changed.
+
+## Initial Agenda (posted earlier)
+{initial_text[:8000]}
+
+## Final Agenda (as of meeting day)
+{final_text[:8000]}
+
+Summarize any differences:
+- Items added to or removed from the agenda
+- Changes to existing agenda item descriptions or scope
+- New supporting documents, staff reports, or attachments added
+- Items moved, continued, or withdrawn
+
+If there are no meaningful differences, state that clearly.
+
+Meeting: {meeting_title}
+Source: {agenda_url}
+"""
+    message = client.messages.create(
+        model="claude-opus-4-6",
+        max_tokens=1500,
+        messages=[{"role": "user", "content": prompt}],
+    )
+    return message.content[0].text
+
+
+def summarize_public_comments(
+    comment_docs: list[tuple[str, str]], meeting_title: str
+) -> str:
+    """
+    Summarize public comment documents with Claude.
+    comment_docs is a list of (url, text) pairs.
+    Returns a Markdown summary organized by topic with support/opposition counts.
+    """
+    if not comment_docs:
+        return "No public comment documents were found linked in the final agenda."
+
+    combined = "\n\n---\n\n".join(
+        f"Source: {url}\n\n{text[:4000]}"
+        for url, text in comment_docs
+    )
+    client = anthropic.Anthropic()
+    prompt = f"""Analyze the following documents linked in a Sausalito City Council meeting agenda.
+
+For each topic or agenda item that has public comments, use this structure:
+
+### [Topic / Agenda Item]
+- **Support**: N comments — [brief summary of supporting arguments]
+- **Opposition**: N comments — [brief summary of opposing arguments]
+- **Key themes**: [recurring concerns, requests, or viewpoints]
+
+If a document is not a public comment (e.g., a staff report or technical study), note its title and summarize its content in 1–2 sentences instead.
+
+Meeting: {meeting_title}
+
+--- LINKED DOCUMENTS ---
+{combined}
+"""
+    message = client.messages.create(
+        model="claude-opus-4-6",
+        max_tokens=2000,
+        messages=[{"role": "user", "content": prompt}],
+    )
     return message.content[0].text
 
 
@@ -618,6 +740,340 @@ def _build_email_body(
 </html>"""
 
 
+def write_final_html(
+    meeting_title: str,
+    changes_summary: str,
+    comments_summary: str,
+    agenda_url: str,
+    source_url: str,
+    meeting_date: str,
+) -> Path:
+    """Write the final-agenda summary (changes + public comments) to city-council/final.html."""
+    changes_html = md_lib.markdown(changes_summary, extensions=["extra"])
+    comments_html = md_lib.markdown(comments_summary, extensions=["extra"])
+
+    now = datetime.now(timezone.utc)
+    updated_str = now.strftime("%-d %B %Y at %-I:%M %p UTC")
+
+    page_title = (
+        f"Sausalito City Council — {meeting_date} Meeting Day Summary"
+        if meeting_date else "Sausalito City Council — Meeting Day Summary"
+    )
+    is_pdf = "pdf" in source_url.lower() or source_url.lower().endswith(".pdf")
+    pdf_label = "Download final agenda PDF" if is_pdf else "View final agenda"
+    subtitle_date = (meeting_date + " — ") if meeting_date else ""
+
+    html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{page_title}</title>
+  <style>
+    *, *::before, *::after {{ box-sizing: border-box; margin: 0; padding: 0; }}
+
+    body {{
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+      background: #f0f4f8;
+      color: #1a2332;
+      line-height: 1.65;
+    }}
+
+    /* ── Header ── */
+    .site-header {{
+      background: linear-gradient(135deg, #0c3547 0%, #1a6b8a 55%, #2eb8b8 100%);
+      color: white;
+      padding: 2.5rem 1.5rem 2rem;
+    }}
+    .header-inner {{ max-width: 780px; margin: 0 auto; }}
+    .site-header h1 {{
+      font-size: 1.75rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.25);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }}
+    .site-header .meeting-label {{
+      font-size: 1rem;
+      opacity: 0.85;
+      margin-top: 0.3rem;
+      font-weight: 400;
+    }}
+
+    /* ── PDF / nav bar ── */
+    .pdf-bar {{
+      background: #e8f4f8;
+      border-bottom: 1px solid #bee3f8;
+      padding: 0.6rem 1.5rem;
+    }}
+    .pdf-bar-inner {{
+      max-width: 780px;
+      margin: 0 auto;
+      font-size: 0.9rem;
+      display: flex;
+      gap: 1.2rem;
+      flex-wrap: wrap;
+    }}
+    .pdf-bar a {{ color: #1a6b8a; text-decoration: none; font-weight: 600; }}
+    .pdf-bar a:hover {{ text-decoration: underline; }}
+
+    /* ── Content ── */
+    .page {{
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }}
+
+    .summary h2 {{
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin: 2rem 0 0.6rem;
+      padding-bottom: 0.35rem;
+      border-bottom: 1px solid #e2e8f0;
+    }}
+    .summary h2:first-child {{ margin-top: 0; }}
+    .summary h3 {{
+      font-size: 1rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin: 1.2rem 0 0.4rem;
+    }}
+    .summary p {{ margin: 0.6rem 0; color: #334155; }}
+    .summary ul, .summary ol {{ margin: 0.5rem 0 0.5rem 1.4rem; color: #334155; }}
+    .summary li {{ margin: 0.3rem 0; }}
+    .summary strong {{ color: #1e293b; font-weight: 600; }}
+    .summary a {{ color: #1a6b8a; text-decoration: none; }}
+    .summary a:hover {{ text-decoration: underline; }}
+
+    /* ── Section callouts ── */
+    .changes-callout {{
+      background: #fffbeb;
+      border-left: 4px solid #d97706;
+      border-radius: 0 8px 8px 0;
+      padding: 1rem 1.25rem;
+      margin-top: 0.6rem;
+    }}
+    .changes-callout p, .changes-callout li {{ color: #451a03; }}
+    .changes-callout a {{ color: #92400e; }}
+
+    .comments-callout {{
+      background: #f0fdf4;
+      border-left: 4px solid #16a34a;
+      border-radius: 0 8px 8px 0;
+      padding: 1rem 1.25rem;
+      margin-top: 0.6rem;
+    }}
+    .comments-callout p, .comments-callout li {{ color: #052e16; }}
+    .comments-callout a {{ color: #166534; }}
+
+    /* ── Footer ── */
+    .page-footer {{
+      margin-top: 3rem;
+      padding-top: 1rem;
+      border-top: 1px solid #e2e8f0;
+      font-size: 0.82rem;
+      color: #94a3b8;
+      line-height: 1.8;
+    }}
+    .page-footer a {{ color: #1a6b8a; text-decoration: none; }}
+    .page-footer a:hover {{ text-decoration: underline; }}
+
+    @media (max-width: 600px) {{
+      .site-header h1 {{ font-size: 1.35rem; }}
+      .page {{ padding: 1.25rem 1rem 3rem; }}
+    }}
+  </style>
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <h1>⚓ Sausalito City Council: Meeting Day Summary</h1>
+      <p class="meeting-label">{subtitle_date}Changes &amp; Public Comments</p>
+    </div>
+  </header>
+
+  <div class="pdf-bar">
+    <div class="pdf-bar-inner">
+      <span>📄 <a href="{source_url}">{pdf_label}</a></span>
+      <span>← <a href="index.html">Initial Agenda Summary</a></span>
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="summary">
+
+      <h2>📝 Changes to the Agenda</h2>
+      <div class="changes-callout">
+        {changes_html}
+      </div>
+
+      <h2>💬 Public Comments</h2>
+      <div class="comments-callout">
+        {comments_html}
+      </div>
+
+    </div>
+
+    <footer class="page-footer">
+      <p>Last updated: {updated_str}</p>
+      <p>Contact: <a href="mailto:jorisvanmens@gmail.com">jorisvanmens@gmail.com</a></p>
+    </footer>
+  </div>
+
+</body>
+</html>
+"""
+    FINAL_HTML_OUTPUT_PATH.parent.mkdir(exist_ok=True)
+    FINAL_HTML_OUTPUT_PATH.write_text(html, encoding="utf-8")
+    return FINAL_HTML_OUTPUT_PATH
+
+
+def run_final_mode(args) -> None:
+    """
+    Final-agenda pipeline: fetch the meeting-day PDF, diff against initial,
+    summarize public comments from new links, write final.html, send email.
+    """
+    # Load stored event_id
+    last_event_id = get_last_event_id()
+    if not last_event_id:
+        print("No stored event_id — run the initial mode first.", file=sys.stderr)
+        sys.exit(1)
+
+    # Load initial PDF
+    initial_pdf_path = AGENDAS_DIR / f"event_{last_event_id}_initial.pdf"
+    if not initial_pdf_path.exists():
+        print(f"Initial PDF not found: {initial_pdf_path}", file=sys.stderr)
+        sys.exit(1)
+
+    print(f"Loading initial PDF: {initial_pdf_path.name}")
+    initial_pdf_bytes = initial_pdf_path.read_bytes()
+    initial_title, initial_text = _parse_pdf(initial_pdf_bytes)
+    initial_links = set(_pdf_links_from_bytes(initial_pdf_bytes))
+    meeting_date = extract_meeting_date(initial_text)
+    agenda_url = AGENDA_URL_TEMPLATE.format(event_id=last_event_id)
+    print(f"  event_id : {last_event_id}")
+    print(f"  meeting  : {initial_title}")
+    print(f"  date     : {meeting_date or '(not found)'}\n")
+
+    # Timing check
+    if not args.skip_timing_check:
+        meeting_dt = extract_meeting_datetime(initial_text)
+        if meeting_dt is None:
+            print("Could not parse meeting date/time from initial PDF.", file=sys.stderr)
+            print("Pass --skip-timing-check to proceed regardless.", file=sys.stderr)
+            sys.exit(0)
+        hours_until = (meeting_dt.astimezone(timezone.utc) - datetime.now(timezone.utc)).total_seconds() / 3600
+        if not is_within_prefetch_window(meeting_dt):
+            if hours_until < 0:
+                print(f"Meeting already started {-hours_until:.1f}h ago. Exiting.")
+            else:
+                print(f"Meeting is {hours_until:.1f}h away — outside the 3-hour prefetch window. Exiting.")
+            sys.exit(0)
+        print(f"Meeting is {hours_until:.1f}h away — within prefetch window.\n")
+
+    # Fetch or load final PDF
+    if args.use_stored_final_pdf:
+        final_pdf_path = AGENDAS_DIR / f"event_{last_event_id}_final.pdf"
+        if not final_pdf_path.exists():
+            print(f"Final PDF not found: {final_pdf_path}", file=sys.stderr)
+            print("Run without --use-stored-final-pdf to fetch it first.", file=sys.stderr)
+            sys.exit(1)
+        final_pdf_bytes = final_pdf_path.read_bytes()
+        _, final_text = _parse_pdf(final_pdf_bytes)
+        source_url = agenda_url
+        print(f"Loaded stored final PDF: {final_pdf_path.name}\n")
+    else:
+        print("Fetching final agenda...")
+        try:
+            _, final_text, source_url, final_pdf_bytes = fetch_agenda_text(agenda_url)
+        except requests.HTTPError as exc:
+            print(f"HTTP error fetching final agenda: {exc}", file=sys.stderr)
+            sys.exit(1)
+        except Exception as exc:
+            print(f"Error fetching final agenda: {exc}", file=sys.stderr)
+            sys.exit(1)
+        if final_pdf_bytes:
+            final_pdf_path = AGENDAS_DIR / f"event_{last_event_id}_final.pdf"
+            AGENDAS_DIR.mkdir(exist_ok=True)
+            final_pdf_path.write_bytes(final_pdf_bytes)
+            print(f"Final PDF saved: {final_pdf_path.name}\n")
+
+    if args.fetch_final_only:
+        print("Stopping after PDF fetch (--fetch-final-only).")
+        return
+
+    # Link diff: find URLs in final PDF that weren't in the initial PDF
+    final_links = _pdf_links_from_bytes(final_pdf_bytes) if final_pdf_bytes else []
+    new_links = [l for l in final_links if l not in initial_links]
+    print(f"Links: {len(initial_links)} initial, {len(final_links)} final, {len(new_links)} new")
+    for link in new_links:
+        print(f"  + {link}")
+    print()
+
+    # Step 1: Summarize changes
+    print("Summarizing agenda changes with Claude...")
+    try:
+        changes_summary = summarize_agenda_changes(initial_text, final_text, initial_title, agenda_url)
+    except Exception as exc:
+        print(f"Error summarizing changes: {exc}", file=sys.stderr)
+        sys.exit(1)
+    print("Done.\n")
+
+    # Step 2: Fetch new linked documents and summarize as public comments
+    comment_docs: list[tuple[str, str]] = []
+    if new_links:
+        print(f"Fetching {len(new_links)} new linked document(s)...")
+        for url in new_links:
+            print(f"  → {url}")
+            try:
+                text = fetch_linked_document(url)
+                if text.strip():
+                    comment_docs.append((url, text))
+                    print(f"     {len(text):,} chars extracted")
+            except Exception as exc:
+                print(f"     failed: {exc}", file=sys.stderr)
+        print()
+
+    print(f"Summarizing {len(comment_docs)} document(s) with Claude...")
+    try:
+        comments_summary = summarize_public_comments(comment_docs, initial_title)
+    except Exception as exc:
+        print(f"Error summarizing comments: {exc}", file=sys.stderr)
+        comments_summary = "Error occurred while summarizing public comments."
+    print("Done.\n")
+
+    # Step 3: Write HTML
+    html_path = write_final_html(
+        initial_title, changes_summary, comments_summary,
+        agenda_url, source_url, meeting_date,
+    )
+    print(f"Final HTML written to: {html_path}\n")
+
+    # Step 4: Send email
+    if args.skip_email:
+        print("Email: skipped (--skip-email)")
+    else:
+        now_utc = datetime.now(timezone.utc)
+        updated_str = now_utc.strftime("%-d %B %Y at %-I:%M %p UTC")
+        subject = (
+            f"Sausalito City Council — {meeting_date + ' ' if meeting_date else ''}"
+            "Meeting Day: Changes & Public Comments"
+        )
+        combined_markdown = (
+            "## Changes to the Agenda\n\n" + changes_summary
+            + "\n\n---\n\n## Public Comments\n\n" + comments_summary
+        )
+        try:
+            email_html = _build_email_body(combined_markdown, source_url, meeting_date, updated_str)
+            send_email(subject, email_html)
+        except Exception as exc:
+            print(f"Email: unexpected error — {exc}", file=sys.stderr)
+
+
 def send_email(subject: str, html_body: str) -> None:
     """
     Send the agenda summary as an HTML email via SendGrid.
@@ -687,7 +1143,7 @@ def main() -> None:
     parser.add_argument(
         "--force",
         action="store_true",
-        help="Run even if the agenda event_id has not changed since the last run.",
+        help="(Initial mode) Re-run even if the event_id has not changed.",
     )
     parser.add_argument(
         "--skip-email",
@@ -698,11 +1154,43 @@ def main() -> None:
         "--use-stored-pdf",
         action="store_true",
         help=(
-            "Skip fetching a new agenda; use the most recently saved PDF "
-            "from city-council/agendas/. Implies --force."
+            "(Initial mode) Skip fetching; use the most recently saved "
+            "event_*_initial.pdf. Implies --force."
         ),
     )
+    # ── Final-mode flags ──────────────────────────────────────────────────────
+    parser.add_argument(
+        "--final",
+        action="store_true",
+        help=(
+            "Run the final-agenda pipeline: fetch meeting-day PDF, diff against "
+            "initial, summarize new linked documents as public comments, write "
+            "final.html, and email."
+        ),
+    )
+    parser.add_argument(
+        "--skip-timing-check",
+        action="store_true",
+        help=(
+            "(Final mode) Skip the check that the meeting is within the "
+            "3-hour prefetch window."
+        ),
+    )
+    parser.add_argument(
+        "--fetch-final-only",
+        action="store_true",
+        help="(Final mode) Only fetch and save the final PDF; skip all summarization.",
+    )
+    parser.add_argument(
+        "--use-stored-final-pdf",
+        action="store_true",
+        help="(Final mode) Use the stored event_*_final.pdf instead of fetching.",
+    )
     args = parser.parse_args()
+
+    if args.final:
+        run_final_mode(args)
+        return
 
     # ── Steps 1 & 2: Resolve agenda source ───────────────────────────────────
     if args.use_stored_pdf:
