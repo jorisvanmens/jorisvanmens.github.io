@@ -79,26 +79,44 @@ def save_event_id(event_id: str) -> None:
     LAST_EVENT_ID_PATH.write_text(event_id, encoding="utf-8")
 
 
+class NoAgendaPublishedError(Exception):
+    """Raised when the Granicus page loads correctly but no agenda is published yet."""
+
+
 def find_next_agenda_url() -> str:
     """
     Scrape the Granicus publisher listing page to find the most
     recent/upcoming City Council meeting with a posted agenda.
     Returns the full agenda viewer URL.
+
+    Raises NoAgendaPublishedError if the page loads and shows meeting listings
+    but no agenda link is available yet.
+    Raises an exception (HTTP error or ValueError) if the page fails to load
+    or doesn't look like a valid Granicus listing.
     """
     print(f"Checking {PUBLISHER_URL} for upcoming meetings...")
     resp = requests.get(PUBLISHER_URL, headers=HEADERS, timeout=20)
     resp.raise_for_status()
 
     match = re.search(r"event_id=(\d+)", resp.text)
-    if not match:
-        raise ValueError(
-            "No event_id found on the Granicus publisher page. "
-            "The page structure may have changed, or no agendas are currently posted.\n"
-            "Try passing --url with a direct agenda link instead."
-        )
+    if match:
+        event_id = match.group(1)
+        return AGENDA_URL_TEMPLATE.format(event_id=event_id)
 
-    event_id = match.group(1)
-    return AGENDA_URL_TEMPLATE.format(event_id=event_id)
+    # No agenda link found — distinguish "not posted yet" from "broken page"
+    page_looks_valid = any(
+        marker in resp.text
+        for marker in ("ViewPublisher", "AgendaViewer", "Granicus", "City Council")
+    )
+    if page_looks_valid:
+        raise NoAgendaPublishedError(
+            "Granicus page loaded and shows upcoming meetings, "
+            "but no agenda has been published yet."
+        )
+    raise ValueError(
+        "Granicus page loaded but doesn't look like a valid meeting listing "
+        "(no recognisable content found). The page structure may have changed."
+    )
 
 
 def _get(url: str) -> requests.Response:
@@ -1258,6 +1276,9 @@ def main() -> None:
             try:
                 agenda_url = find_next_agenda_url()
                 print(f"Found agenda:\n  {agenda_url}\n")
+            except NoAgendaPublishedError as exc:
+                print(f"{exc}")
+                sys.exit(0)
             except Exception as exc:
                 print(f"Error finding agenda URL: {exc}", file=sys.stderr)
                 print(
