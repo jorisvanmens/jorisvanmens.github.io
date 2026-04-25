@@ -651,7 +651,7 @@ def write_html(
 
     <footer class="page-footer">
       <p>Last updated: {updated_str}</p>
-      <p>Contact: <a href="mailto:jorisvanmens@gmail.com">jorisvanmens@gmail.com</a></p>
+      <p>Contact: <a href="mailto:city-council-app@jorisvanmens.com">city-council-app@jorisvanmens.com</a></p>
     </footer>
   </div>
 
