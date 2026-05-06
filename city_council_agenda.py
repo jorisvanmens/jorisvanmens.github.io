@@ -395,6 +395,9 @@ Changes to note:
 - New staff reports or attachments added
 - Items moved, continued, or withdrawn
 
+Do NOT mention public comments being added.
+Present the changes in agenda item number order.
+
 If nothing changed, write a single sentence saying so.
 
 Meeting: {meeting_title}
@@ -436,11 +439,12 @@ For each agenda item that has public comments, use this structure:
 
 Count only the public comments for this item, then apply exactly one of these two formats:
 
-**5 or fewer comments:** Write a one-sentence summary of each individual comment. Use the commenter's actual name if it appears; never write "a resident" or "a community member".
+**5 or fewer comments:** A bullet list with one bullet per commenter. Each bullet is one sentence. Use the commenter's actual name if it appears; never write "a resident" or "a community member".
 
 **6 or more comments:** Write the support/opposition counts and a 2–3 sentence summary of the overall sentiment. Do not list individual comments.
 
 Rules:
+- Order agenda items from most comments (top) to fewest (bottom)
 - Do NOT include a "Key themes" section
 - Do NOT produce long lists of names
 - Keep it concise
