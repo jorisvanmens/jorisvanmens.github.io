@@ -387,7 +387,7 @@ def summarize_agenda_changes(
 ## Final Agenda (as of meeting day)
 {final_text[:8000]}
 
-List ONLY items that actually changed. For each changed item, write one or two sentences describing what changed. Do not mention items that remained the same.
+List ONLY items that actually changed. Use one sentence per changed item — no more. Do not mention items that remained the same.
 
 Changes to note:
 - Items added to or removed from the agenda
@@ -424,26 +424,27 @@ def summarize_public_comments(
         for url, text in comment_docs
     )
     client = anthropic.Anthropic()
-    prompt = f"""Analyze the following documents linked in a Sausalito City Council meeting agenda.
+    prompt = f"""The following documents are linked from a Sausalito City Council meeting agenda.
 
-Do NOT add a title or meeting header at the top of your response. Start directly with the first agenda item.
+Focus ONLY on content that is explicitly labeled as public comments (e.g. sections or pages headed "Public Comments", "eComments", "Written Public Comments", or similar). Ignore everything else — staff reports, technical studies, staff responses, legal notices, attachments, etc.
+
+Do NOT add a title or meeting header at the top of your response. Start directly with the first agenda item that has public comments.
 
 For each agenda item that has public comments, use this structure:
 
 ### [Agenda Item Name]
 
-Count the total comments for this item, then apply exactly one of these two formats:
+Count only the public comments for this item, then apply exactly one of these two formats:
 
-**5 or fewer comments:** Write a one-sentence summary of each individual comment. Use the commenter's actual name if it appears in the document; never write "a resident" or "a community member".
+**5 or fewer comments:** Write a one-sentence summary of each individual comment. Use the commenter's actual name if it appears; never write "a resident" or "a community member".
 
 **6 or more comments:** Write the support/opposition counts and a 2–3 sentence summary of the overall sentiment. Do not list individual comments.
 
-Rules that apply in all cases:
+Rules:
 - Do NOT include a "Key themes" section
-- Do NOT produce long lists of names ("Notable supporters: …")
+- Do NOT produce long lists of names
 - Keep it concise
-
-If a linked document is not a public comment (e.g. a staff report or technical study), give its title and a one-sentence summary.
+- If no content in the documents is explicitly labeled as public comments, write a single sentence saying so.
 
 Meeting: {meeting_title}
 
