@@ -426,7 +426,7 @@ def summarize_public_comments(
     client = anthropic.Anthropic()
     prompt = f"""The following documents are linked from a Sausalito City Council meeting agenda.
 
-Focus ONLY on content that is explicitly labeled as public comments (e.g. sections or pages headed "Public Comments", "eComments", "Written Public Comments", or similar). Ignore everything else — staff reports, technical studies, staff responses, legal notices, attachments, etc.
+Focus ONLY on content that is explicitly labeled as public comments. Ignore everything else — staff reports, technical studies, staff responses, legal notices, attachments, etc.
 
 Do NOT add a title or meeting header at the top of your response. Start directly with the first agenda item that has public comments.
 
