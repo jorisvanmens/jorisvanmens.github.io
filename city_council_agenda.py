@@ -1134,8 +1134,8 @@ def run_final_mode(args) -> None:
         updated_str = now_utc.strftime("%-d %B %Y at %-I:%M %p UTC")
         subject = "Today's meeting: comments & agenda update"
         combined_markdown = (
-            "# Changes to the Agenda\n\n" + changes_summary
-            + "\n\n---\n\n# Public Comments\n\n" + comments_summary
+            "# Public Comments\n\n" + comments_summary
+            + "\n\n---\n\n# Changes to the Agenda\n\n" + changes_summary
         )
         try:
             email_html = _build_email_body(combined_markdown, source_url, meeting_date, updated_str)
