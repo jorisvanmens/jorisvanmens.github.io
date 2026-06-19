@@ -283,7 +283,7 @@ def extract_meeting_datetime(text: str) -> datetime | None:
         return None
 
 
-def is_within_prefetch_window(meeting_dt: datetime, window_hours: float = 5.0) -> bool:
+def is_within_prefetch_window(meeting_dt: datetime, window_hours: float = 24.5) -> bool:
     """Return True if the current time is within window_hours before the meeting."""
     now = datetime.now(timezone.utc)
     hours_until = (meeting_dt.astimezone(timezone.utc) - now).total_seconds() / 3600
@@ -1044,7 +1044,7 @@ def run_final_mode(args) -> None:
             if hours_until < 0:
                 print(f"Meeting already started {-hours_until:.1f}h ago. Exiting.")
             else:
-                print(f"Meeting is {hours_until:.1f}h away — outside the 5-hour prefetch window. Exiting.")
+                print(f"Meeting is {hours_until:.1f}h away — outside the 24.5-hour prefetch window. Exiting.")
             sys.exit(0)
         print(f"Meeting is {hours_until:.1f}h away — within prefetch window.\n")
 
@@ -1243,7 +1243,7 @@ def main() -> None:
         action="store_true",
         help=(
             "(Final mode) Skip the check that the meeting is within the "
-            "3-hour prefetch window."
+            "24.5-hour prefetch window."
         ),
     )
     parser.add_argument(
