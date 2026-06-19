@@ -327,7 +327,7 @@ Produce a summary with exactly three sections:
 State the meeting date and time(s) concisely on one line, e.g.:
 "*Tuesday April 21, 2026 · Special Meeting (Closed Session) 3:30 PM · Regular Meeting 5:00 PM*"
 Wrap it in Markdown italics as shown. Do NOT include the meeting location or Zoom/call-in details.
-Then write 2–3 sentences summarizing the overall themes or most significant items.
+Then write 2–3 concise sentences summarizing the overall themes or most significant items. Keep the language tight. Whenever you mention a specific topic or item, put its agenda item number in parentheses right after it, e.g. "(3.H)".
 
 ## 2. Topics of Interest
 Identify every agenda item related to any of the following, even if only tangentially. For each category that has matching items, use the exact Markdown sub-header shown below:
