@@ -45,7 +45,7 @@ LAST_EVENT_ID_PATH = Path(__file__).parent / "city-council" / "last_event_id"
 AGENDAS_DIR = Path(__file__).parent / "city-council" / "agendas"
 
 # ── Email settings ────────────────────────────────────────────────────────────
-# SENDER_EMAIL must be verified in SendGrid (Settings → Sender Authentication).
+# SENDER_EMAIL's domain must be verified in Resend (Dashboard → Domains).
 SENDER_EMAIL = ("City Council App", "city-council-app@jorisvanmens.com")
 
 # Recipients are read from the EMAIL_RECIPIENTS environment variable (a GitHub
@@ -1146,12 +1146,12 @@ def run_final_mode(args) -> None:
 
 def send_email(subject: str, html_body: str) -> None:
     """
-    Send the agenda summary as an HTML email via SendGrid.
-    Silently skips if SENDGRID_API_KEY is not set.
+    Send the agenda summary as an HTML email via Resend.
+    Silently skips if RESEND_API_KEY is not set.
     """
-    api_key = os.environ.get("SENDGRID_API_KEY")
+    api_key = os.environ.get("RESEND_API_KEY")
     if not api_key:
-        print("Email: SENDGRID_API_KEY not set — skipping.")
+        print("Email: RESEND_API_KEY not set — skipping.")
         return
 
     recipients = get_recipients()
@@ -1159,38 +1159,33 @@ def send_email(subject: str, html_body: str) -> None:
         print("Email: EMAIL_RECIPIENTS not set — skipping.")
         return
 
-    from sendgrid import SendGridAPIClient
-    from sendgrid.helpers.mail import Email as SgEmail
-    from sendgrid.helpers.mail import Mail
+    import resend
 
     sender_name, sender_addr = SENDER_EMAIL
+    from_field = f"{sender_name} <{sender_addr}>"
     print(f"Email: sending to {len(recipients)} recipient(s)")
-    print(f"  From   : {sender_name} <{sender_addr}>")
+    print(f"  From   : {from_field}")
     print(f"  To     : {', '.join(recipients)}")
     print(f"  Subject: {subject}")
 
     try:
-        message = Mail(
-            from_email=SgEmail(sender_addr, sender_name),
-            to_emails=recipients,
-            subject=subject,
-            html_content=html_body,
-        )
-        response = SendGridAPIClient(api_key).send(message)
-        print(f"Email: sent successfully (HTTP {response.status_code})")
+        resend.api_key = api_key
+        response = resend.Emails.send({
+            "from": from_field,
+            "to": recipients,
+            "subject": subject,
+            "html": html_body,
+        })
+        email_id = response.get("id") if isinstance(response, dict) else getattr(response, "id", None)
+        print(f"Email: sent successfully (id={email_id})")
     except Exception as exc:
-        status = getattr(exc, "status_code", None)
-        body = getattr(exc, "body", b"")
-        if isinstance(body, bytes):
-            body = body.decode("utf-8", errors="replace")
-        if status == 403:
+        msg = str(exc)
+        if "domain" in msg.lower() or "not verified" in msg.lower():
             print(
-                f"Email: SendGrid 403 Forbidden — '{sender_addr}' may not be verified.\n"
-                "Fix: SendGrid dashboard → Settings → Sender Authentication.",
+                f"Email: Resend rejected sender '{sender_addr}' — the domain may not be verified.\n"
+                "Fix: Resend dashboard → Domains → verify jorisvanmens.com (add the DNS records).",
                 file=sys.stderr,
             )
-        elif status:
-            print(f"Email: SendGrid error {status} — {body or exc}", file=sys.stderr)
         else:
             print(f"Email: failed to send — {exc}", file=sys.stderr)
 
