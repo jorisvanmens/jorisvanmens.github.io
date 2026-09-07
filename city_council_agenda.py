@@ -261,9 +261,12 @@ def extract_meeting_datetime(text: str) -> datetime | None:
     if not date_match:
         return None
 
-    # Prefer time explicitly labelled as Regular Meeting or Open Session
+    # Prefer time explicitly labelled as Regular Meeting or Open Session.
+    # [^\d]{0,40}? allows wording like "Regular Meeting will convene at 7:00 PM"
+    # while the no-digit class stops it from skipping past an earlier time
+    # (e.g. a Special Meeting time listed above it).
     labelled = re.search(
-        r"(?:Regular\s+Meeting|Open\s+Session)\s*[:\-]?\s*(\d{1,2}:\d{2})\s*([AP]\.?M\.?)",
+        r"(?:Regular\s+Meeting|Open\s+Session)\b[^\d]{0,40}?(\d{1,2}:\d{2})\s*([AP]\.?M\.?)",
         text[:3000], re.I,
     )
     if labelled:
