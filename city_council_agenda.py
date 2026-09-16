@@ -286,11 +286,10 @@ def extract_meeting_datetime(text: str) -> datetime | None:
         return None
 
 
-def is_within_prefetch_window(meeting_dt: datetime, window_hours: float = 24.5) -> bool:
-    """Return True if the current time is within window_hours before the meeting."""
-    now = datetime.now(timezone.utc)
-    hours_until = (meeting_dt.astimezone(timezone.utc) - now).total_seconds() / 3600
-    return 0 < hours_until <= window_hours
+def is_meeting_today(meeting_dt: datetime) -> bool:
+    """Return True if the meeting falls on today's date in Pacific time."""
+    pacific = ZoneInfo("America/Los_Angeles")
+    return meeting_dt.astimezone(pacific).date() == datetime.now(pacific).date()
 
 
 def fetch_linked_document(url: str) -> str:
@@ -1036,20 +1035,19 @@ def run_final_mode(args) -> None:
     print(f"  date     : {meeting_date or '(not found)'}")
     print(f"  time     : {public_comment_time or '(not found)'}\n")
 
-    # Timing check
+    # Timing check: only run on the day of the meeting
     if not args.skip_timing_check:
         if meeting_dt is None:
             print("Could not parse meeting date/time from initial PDF.", file=sys.stderr)
             print("Pass --skip-timing-check to proceed regardless.", file=sys.stderr)
             sys.exit(0)
-        hours_until = (meeting_dt.astimezone(timezone.utc) - datetime.now(timezone.utc)).total_seconds() / 3600
-        if not is_within_prefetch_window(meeting_dt):
-            if hours_until < 0:
-                print(f"Meeting already started {-hours_until:.1f}h ago. Exiting.")
-            else:
-                print(f"Meeting is {hours_until:.1f}h away — outside the 24.5-hour prefetch window. Exiting.")
+        pacific = ZoneInfo("America/Los_Angeles")
+        meeting_day = meeting_dt.astimezone(pacific).date()
+        today = datetime.now(pacific).date()
+        if not is_meeting_today(meeting_dt):
+            print(f"Meeting is on {meeting_day} (today is {today}) — not meeting day. Exiting.")
             sys.exit(0)
-        print(f"Meeting is {hours_until:.1f}h away — within prefetch window.\n")
+        print(f"Meeting is today ({meeting_day}) at {public_comment_time or 'unknown time'}.\n")
 
     # Fetch or load final PDF
     if args.use_stored_final_pdf:
@@ -1240,8 +1238,8 @@ def main() -> None:
         "--skip-timing-check",
         action="store_true",
         help=(
-            "(Final mode) Skip the check that the meeting is within the "
-            "24.5-hour prefetch window."
+            "(Final mode) Skip the check that the meeting is today "
+            "(Pacific time)."
         ),
     )
     parser.add_argument(
